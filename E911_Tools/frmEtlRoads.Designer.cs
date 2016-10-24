@@ -32,6 +32,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnETLtoPSAP = new System.Windows.Forms.Button();
+            this.pBar = new System.Windows.Forms.ProgressBar();
+            this.lblProgressBar = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // cboPSAPname
@@ -85,11 +87,31 @@
             this.btnETLtoPSAP.UseVisualStyleBackColor = true;
             this.btnETLtoPSAP.Click += new System.EventHandler(this.btnETLtoPSAP_Click);
             // 
+            // pBar
+            // 
+            this.pBar.Location = new System.Drawing.Point(19, 113);
+            this.pBar.Name = "pBar";
+            this.pBar.Size = new System.Drawing.Size(436, 23);
+            this.pBar.TabIndex = 4;
+            this.pBar.Visible = false;
+            // 
+            // lblProgressBar
+            // 
+            this.lblProgressBar.AutoSize = true;
+            this.lblProgressBar.Location = new System.Drawing.Point(20, 96);
+            this.lblProgressBar.Name = "lblProgressBar";
+            this.lblProgressBar.Size = new System.Drawing.Size(65, 13);
+            this.lblProgressBar.TabIndex = 5;
+            this.lblProgressBar.Text = "Working .....";
+            this.lblProgressBar.Visible = false;
+            // 
             // frmEtlRoads
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(503, 115);
+            this.ClientSize = new System.Drawing.Size(497, 152);
+            this.Controls.Add(this.lblProgressBar);
+            this.Controls.Add(this.pBar);
             this.Controls.Add(this.btnETLtoPSAP);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -111,5 +133,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnETLtoPSAP;
+        private System.Windows.Forms.ProgressBar pBar;
+        private System.Windows.Forms.Label lblProgressBar;
     }
 }

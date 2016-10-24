@@ -81,6 +81,9 @@
     <Reference Include="ESRI.ArcGIS.CatalogUI, Version=10.3.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="ESRI.ArcGIS.DataSourcesFile, Version=10.3.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
     <Reference Include="ESRI.ArcGIS.DataSourcesGDB, Version=10.3.0.0, Culture=neutral, PublicKeyToken=8fc3cc631e44ad86, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -125,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="btnEtlRoads.cs" />
+    <Compile Include="clsE911StaticClass.cs" />
     <Compile Include="clsModelessDialog.cs" />
     <Compile Include="frmEtlRoads.cs">
       <SubType>Form</SubType>
