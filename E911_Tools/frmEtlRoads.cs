@@ -69,32 +69,6 @@ namespace E911_Tools
         {
             try
             {
-                //////////// open arcCatalog dialog box so user can select the feature class that contains the psap's schema and unique, non-utrans segments
-                //////////IGxDialog pGxDialog = new GxDialog();
-                //////////pGxDialog.AllowMultiSelect = false;
-                //////////pGxDialog.Title = "Select Feature Class for PSAP Schema";
-                //////////IGxObjectFilter pGxObjectFilter = new GxFilterFGDBFeatureClasses();
-                //////////pGxDialog.ObjectFilter = pGxObjectFilter;
-                ////////////pGxDialog.Name = "";  //clears out any text in the feature class name
-
-                //////////IEnumGxObject pEnumGxObject;
-
-                ////////////open dialog so user can select the feature class
-                //////////Boolean CancelBrowser; //cancel the dialog if button is clicked
-                //////////CancelBrowser = pGxDialog.DoModalOpen(0, out pEnumGxObject); //.DoModalSave(0); //opens the dialog to save data
-
-                ////////////if cancel was clicked, exit the method
-                //////////if (CancelBrowser == false)
-                //////////{
-                //////////    return;
-                //////////}
-
-                ////////////MessageBox.Show(pEnumGxObject.Next().FullName);
-
-
-
-
-                //// get access to workspace based on user selected feature class
                 //// Create workspace name objects.
                 //IWorkspaceName sourceWorkspaceName = new WorkspaceNameClass();
                 //IWorkspaceName targetWorkspaceName = new WorkspaceNameClass();
@@ -269,10 +243,23 @@ namespace E911_Tools
 
                     // add field values to the newly-created feature class
                     arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("L_F_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("L_F_ADD")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("L_T_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("L_T_ADD")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("R_F_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("R_F_ADD")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("R_T_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("R_T_ADD")).ToString().Trim());
+
+                    if (arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("L_F_ADD")) != null)
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("L_F_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("L_F_ADD")));
+                    }
+                    if (arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("L_T_ADD")) != null)
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("L_T_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("L_T_ADD")));                       
+                    }
+                    if (arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("R_F_ADD")) != null)
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("R_F_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("R_F_ADD")));
+                    }
+                    if (arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("R_T_ADD")) != null)
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("R_T_ADD"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("R_T_ADD")));
+                    }
                     arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("CARTOCODE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("CARTOCODE")).ToString().Trim());
                     arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("PREDIR"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim());
                     arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETTYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim());
@@ -440,7 +427,8 @@ namespace E911_Tools
                 switch (strPSAPName)
                 {
                     case "StGeorge":
-                        strCountyList = "COFIPS = 49053 and addr_sys = 'IVINS' and cartocode = 8";
+                        //strCountyList = "COFIPS = 49053 and addr_sys = 'IVINS' and cartocode = 8";
+                        strCountyList = "COFIPS = '49053' AND STREETNAME IS NOT NULL AND (( L_F_ADD IS NOT NULL AND L_T_ADD IS NOT NULL AND R_F_ADD IS NOT NULL AND R_T_ADD IS NOT NULL) AND (L_F_ADD <> 0 AND L_T_ADD <> 0 AND R_F_ADD <> 0 AND R_T_ADD <> 0))";
                         break;
                     case "TOC":
                         strCountyList = "COFIPS in (,,,)";
