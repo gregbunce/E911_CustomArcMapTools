@@ -242,13 +242,15 @@ namespace E911_Tools
                     arcFeatureNewSchemaFeat.Shape = arcFeatureUtrans.Shape;
 
                     // add field values to the newly-created feature class
-                    if (arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")) != DBNull.Value | arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")) != null)
+                    string strSTREETNAME = "";
+                    strSTREETNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+                    if (strSTREETNAME != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim());
                     }
                     else
                     {
-                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
+                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
                     }
 
 
@@ -301,18 +303,19 @@ namespace E911_Tools
                         //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("PREDIR"),  DBNull.Value);
                     }
 
-                    if (arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")) != null)
+                    string strSTREETTYPE = "";
+                    strSTREETTYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
+                    if (strSTREETTYPE != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETTYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim()); 
                     }
                     else
                     {
-                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETTYPE"), DBNull.Value);
+                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETTYPE"), DBNull.Value);
                     }
 
                     string strSUFDIR = "";
                     strSUFDIR = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
-
                     if (strSUFDIR != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SUFDIR"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim());             
@@ -322,28 +325,91 @@ namespace E911_Tools
                         //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SUFDIR"), DBNull.Value);
                     }
 
+                    string strALIAS1 = "";
+                    strALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                    if (strALIAS1 != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString());
+                    }
+
+                    string strALIAS1TYPE = "";
+                    strALIAS1TYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim();
+                    if (strALIAS1TYPE != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1TYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim());
+                    }
+
+                    string strALIAS2 = "";
+                    strALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                    if (strALIAS2 != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim());  
+                    }
+
+                    string strALIAS2TYPE = "";
+                    strALIAS2TYPE =arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim();
+                    if (strALIAS2TYPE != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2TYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim());
+                    }
+
+                    string strACSALIAS = "";
+                    strACSALIAS =arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSALIAS")).ToString().Trim();
+                    if (strACSALIAS != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSALIAS"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSALIAS")).ToString().Trim());
+                    }
+
+                    string strACSNAME = "";
+                    strACSNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSNAME")).ToString().Trim();
+                    if (strACSNAME != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSNAME")).ToString().Trim());
+                    }
                     
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1TYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2TYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSALIAS"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSALIAS")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSNAME")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSSUF"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSSUF")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ZIPLEFT"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ZIPLEFT")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ZIPRIGHT"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ZIPRIGHT")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("COFIPS"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("COFIPS")).ToString().Trim());
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("HWYNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("HWYNAME")).ToString().Trim());
+                    string strACSSUF = "";
+                    strACSSUF = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSSUF")).ToString().Trim();
+                    if (strACSSUF != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSSUF"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSSUF")).ToString().Trim());
+                    }
+
+                    string strZIPLEFT = "";
+                    strZIPLEFT = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ZIPLEFT")).ToString().Trim();
+                    if (strZIPLEFT != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ZIPLEFT"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ZIPLEFT")).ToString().Trim()); 
+                    }
+
+                    string strZIPRIGHT = "";
+                    strZIPRIGHT = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ZIPRIGHT")).ToString().Trim();
+                    if (strZIPRIGHT != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ZIPRIGHT"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ZIPRIGHT")).ToString().Trim());
+                    }
+
+                    string strCOFIPS = "";
+                    strCOFIPS = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("COFIPS")).ToString().Trim();
+                    if (true)
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("COFIPS"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("COFIPS")).ToString().Trim());
+                    }
+
+                    string strHWYNAME = "";
+                    strHWYNAME =arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("HWYNAME")).ToString().Trim();
+                    if (strHWYNAME != "")
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("HWYNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("HWYNAME")).ToString().Trim());
+                    }
 
                     // set up the concatination for the STREET field
                     string strSTREET = "";
-                    string strStreetName = "";
-                    strStreetName = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
-                    string strSTREETTYPE = "";
-                    strSTREETTYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
-
                     int intNumber;
-                    bool blnIsNumeric = int.TryParse(strStreetName, out intNumber);
+                    bool blnIsNumeric = int.TryParse(strSTREETNAME, out intNumber);
+                    //string strStreetName = "";
+                    //strStreetName = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+                    //string strSTREETTYPE = "";
+                    //strSTREETTYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
 
                     // check if streetname is numeric and if it has a streetype of cir if so format it with the circle after the sufdir
                     if (strSTREETTYPE.ToUpper() == "CIR" & blnIsNumeric)
@@ -352,13 +418,6 @@ namespace E911_Tools
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim() + " " +
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
-                        //// replace double spaces with one
-                        //strSTREET = strSTREET.Replace("  ", " ");
-                        //// check for the word "HIGHWAY" and replace it with "SR-"
-                        //strSTREET = strSTREET.Replace("HIGHWAY ", "SR-");
-                        //// trim the whole street concatination
-                        //strSTREET = strSTREET.Trim();
-                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
                     }
                     else // the streetname does not contain a number with the streettype being "cir"
                     {
@@ -366,13 +425,6 @@ namespace E911_Tools
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim() + " " +
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
-                        //// replace double spaces with one
-                        //strSTREET = strSTREET.Replace("  ", " ");
-                        //// check for the word "HIGHWAY" and replace it with "SR-"
-                        //strSTREET = strSTREET.Replace("HIGHWAY ", "SR-");
-                        //// trim the whole street concatination
-                        //strSTREET = strSTREET.Trim();
-                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
                     }
                     // replace double spaces with one
                     strSTREET = strSTREET.Replace("  ", " ");
@@ -398,9 +450,9 @@ namespace E911_Tools
                     }
 
                     // populate salias1 and salias2 fields
-                    string strAlias1 = "";
-                    strAlias1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
-                    if (strAlias1 != "")
+                    //string strAlias1 = "";
+                    //strAlias1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                    if (strALIAS1 != "")
                     {
                         string strSALIAS1 = "";
                         strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim() + " " +
@@ -411,9 +463,9 @@ namespace E911_Tools
                         strSALIAS1 = strSALIAS1.Trim();
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
                     }
-                    string strAlias2 = "";
-                    strAlias2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
-                    if (strAlias2 != "")
+                    //string strAlias2 = "";
+                    //strAlias2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                    if (strALIAS2 != "")
                     {
                         string strSALIAS2 = "";
                         strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim() + " " +
@@ -429,19 +481,19 @@ namespace E911_Tools
                     //string strStreetName = "";
                     //strStreetName = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
                     //string strAlias1 = "";
-                    strAlias1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                    //strALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
                     //string strAlias2 = "";
-                    strAlias2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
-                    bool blnStreetNameContainsHwy = strStreetName.Contains("HIGHWAY");
-                    bool blnAlias1ContainsHwy = strAlias1.Contains("HIGHWAY");
-                    bool blnAlias2ContainsHwy = strAlias2.Contains("HIGHWAY");
+                    //strALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                    bool blnStreetNameContainsHwy = strSTREETNAME.Contains("HIGHWAY");
+                    bool blnAlias1ContainsHwy = strALIAS1.Contains("HIGHWAY");
+                    bool blnAlias2ContainsHwy = strALIAS2.Contains("HIGHWAY");
                     string strSALIAS3 = "";
 
                     if (blnStreetNameContainsHwy) // if highway in streetname
                     {
-                        strStreetName = strStreetName.Replace("HIGHWAY", "HWY");
+                        strSTREETNAME = strSTREETNAME.Replace("HIGHWAY", "HWY");
                         strSALIAS3 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                            strStreetName + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim() + " " +
+                            strSTREETNAME + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim() + " " +
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
                         strSALIAS3 = strSALIAS3.Replace("  ", " ");
                         strSALIAS3 = strSALIAS3.Trim();
@@ -451,9 +503,9 @@ namespace E911_Tools
                     {
                         if (blnAlias1ContainsHwy) // if highway in alias1
                         {
-                            strAlias1 = strAlias1.Replace("HIGHWAY", "HWY");
+                            strALIAS1 = strALIAS1.Replace("HIGHWAY", "HWY");
                             strSALIAS3 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                            strAlias1 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim() + " " +
+                            strALIAS1 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim() + " " +
                                 arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
                             strSALIAS3 = strSALIAS3.Replace("  ", " ");
                             strSALIAS3 = strSALIAS3.Trim();
@@ -463,9 +515,9 @@ namespace E911_Tools
                         {
                             if (blnAlias2ContainsHwy)
                             {
-                                strAlias2 = strAlias2.Replace("HIGHWAY", "HWY");
+                                strALIAS2 = strALIAS2.Replace("HIGHWAY", "HWY");
                                 strSALIAS3 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                                   strAlias2 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim() + " " +
+                                   strALIAS2 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim() + " " +
                                        arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
                                 strSALIAS3 = strSALIAS3.Replace("  ", " ");
                                 strSALIAS3 = strSALIAS3.Trim();
@@ -473,17 +525,6 @@ namespace E911_Tools
                             }
                         }
                     }
-
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-                    //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField(""), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("")).ToString());
-
-
-
 
                     // store the new row/feature
                     arcFeatureNewSchemaFeat.Store();
@@ -518,7 +559,7 @@ namespace E911_Tools
                 switch (strPSAPName)
                 {
                     case "StGeorge":
-                        strCountyList = "COFIPS = 49053 and STREETTYPE = 'CIR'";
+                        strCountyList = "COFIPS = 49053";
                         //strCountyList = "COFIPS = '49053' AND STREETNAME IS NOT NULL AND (( L_F_ADD IS NOT NULL AND L_T_ADD IS NOT NULL AND R_F_ADD IS NOT NULL AND R_T_ADD IS NOT NULL) AND (L_F_ADD <> 0 AND L_T_ADD <> 0 AND R_F_ADD <> 0 AND R_T_ADD <> 0))";
                         break;
                     case "TOC":
