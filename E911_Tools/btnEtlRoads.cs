@@ -66,7 +66,7 @@ namespace E911_Tools
         #endregion
         #endregion
 
-        private IApplication m_application;
+        public static IApplication m_application;
         public btnEtlRoads()
         {
             //

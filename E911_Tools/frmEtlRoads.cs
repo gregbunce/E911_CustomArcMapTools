@@ -14,14 +14,23 @@ using ESRI.ArcGIS.CatalogUI;
 using ESRI.ArcGIS.Geometry;
 using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.Carto;
+using ESRI.ArcGIS.ArcMapUI;
+using ESRI.ArcGIS.ADF;
 
 namespace E911_Tools
 {
     public partial class frmEtlRoads : Form
     {
         // variables with class scope
-        IFeatureClass pUtransFeatureClass; 
+        IFeatureClass pUtransFeatureClass;
+        IMap pMap;
+        IMxDocument pMxDocument;
+        IActiveView pActiveView;
 
+        //get access to the newly-created feature class with psap's schema
+        Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
+        IWorkspaceFactory workspaceFactory; // = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+        IFeatureWorkspace arcFeatWorkspace; // = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
 
 
         public frmEtlRoads()
@@ -34,6 +43,10 @@ namespace E911_Tools
         {
             try
             {
+                // get access to the feature workspace
+                workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
+
 
             }
             catch (Exception ex)
@@ -204,14 +217,14 @@ namespace E911_Tools
                 pBar.Step = 1;
 
 
-                //get access to the newly-created feature class with psap's schema
-                Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
-                IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-                IFeatureWorkspace arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
+                ////get access to the newly-created feature class with psap's schema
+                //Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
+                //IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                //IFeatureWorkspace arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
                 //IFeatureWorkspace arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory;
                 //IFeatureClass arcFeatClassNewSchemaFeat = arcFeatWorkspace.OpenFeatureClass(cboPSAPname.Text.ToString() + "_ETL_" + DateTime.Now.ToString("yyyyMMdd"));
                 IFeatureClass arcFeatClassNewSchemaFeat = arcFeatWorkspace.OpenFeatureClass("StGeorge_ETL_20161021");
-
+                
                 // get access to utrans database and the centerline feature class
                 //connect to sde
                 IWorkspace workspace = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:utrans.agrc.utah.gov", "UTRANS", "OSA", "sde.DEFAULT");
@@ -390,7 +403,7 @@ namespace E911_Tools
 
                     string strCOFIPS = "";
                     strCOFIPS = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("COFIPS")).ToString().Trim();
-                    if (true)
+                    if (strCOFIPS != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("COFIPS"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("COFIPS")).ToString().Trim());
                     }
@@ -416,8 +429,7 @@ namespace E911_Tools
                     {
                         strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
+                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
                     }
                     else // the streetname does not contain a number with the streettype being "cir"
                     {
@@ -430,6 +442,7 @@ namespace E911_Tools
                     strSTREET = strSTREET.Replace("  ", " ");
                     // check for the word "HIGHWAY" and replace it with "SR-"
                     strSTREET = strSTREET.Replace("HIGHWAY ", "SR-");
+                    strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
                     // trim the whole street concatination
                     strSTREET = strSTREET.Trim();
                     arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
@@ -460,6 +473,7 @@ namespace E911_Tools
                         strSALIAS1 = strSALIAS1.Replace("  ", " ");
                         // check for the word "HIGHWAY" and replace it with "SR-"
                         strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "SR-");
+                        strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
                         strSALIAS1 = strSALIAS1.Trim();
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
                     }
@@ -473,17 +487,12 @@ namespace E911_Tools
                         strSALIAS2 = strSALIAS2.Replace("  ", " ");
                         // check for the word "HIGHWAY" and replace it with "SR-"
                         strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "SR-");
+                        strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
                         strSALIAS2 = strSALIAS2.Trim();
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
                     }
 
                     // populate the salias3 field of street name or the alias1 or alias2 fields contain HIGHWAY... then replace with HWY
-                    //string strStreetName = "";
-                    //strStreetName = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
-                    //string strAlias1 = "";
-                    //strALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
-                    //string strAlias2 = "";
-                    //strALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
                     bool blnStreetNameContainsHwy = strSTREETNAME.Contains("HIGHWAY");
                     bool blnAlias1ContainsHwy = strALIAS1.Contains("HIGHWAY");
                     bool blnAlias2ContainsHwy = strALIAS2.Contains("HIGHWAY");
@@ -534,8 +543,6 @@ namespace E911_Tools
                 }
 
 
-                pBar.Visible = false;
-                lblProgressBar.Visible = false;
                 //this.Close();
             }
             catch (Exception ex)
@@ -559,7 +566,7 @@ namespace E911_Tools
                 switch (strPSAPName)
                 {
                     case "StGeorge":
-                        strCountyList = "COFIPS = 49053";
+                        strCountyList = "COFIPS = 49053 AND CARTOCODE <> 99";
                         //strCountyList = "COFIPS = '49053' AND STREETNAME IS NOT NULL AND (( L_F_ADD IS NOT NULL AND L_T_ADD IS NOT NULL AND R_F_ADD IS NOT NULL AND R_T_ADD IS NOT NULL) AND (L_F_ADD <> 0 AND L_T_ADD <> 0 AND R_F_ADD <> 0 AND R_T_ADD <> 0))";
                         break;
                     case "TOC":
@@ -586,6 +593,231 @@ namespace E911_Tools
                 "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return null;
             }
+        }
+
+
+
+        // select polylines that intersect polygon boundaries (based on roads layer selected in map's TOC)
+        private void btnSelectIntersectSegs_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // get access to the psap boundaries
+                IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
+
+                // loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
+                //get access to the document and the active view
+                pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
+                pMap = pMxDocument.FocusMap;
+                pActiveView = pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
+
+                //make sure the user has selected a polyline layer
+                if (pMxDocument.SelectedLayer == null)
+                {
+                    MessageBox.Show("Please select the roads layer in the TOC.", "Select Layer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                if (!(pMxDocument.SelectedLayer is IFeatureLayer))
+                {
+                    MessageBox.Show("Please select polyline layer.", "Must be PolyLine", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                //cast the selected layer as a feature layer
+                IGeoFeatureLayer pGFlayer = (IGeoFeatureLayer)pMxDocument.SelectedLayer;
+
+                //check if the feaure layer is a polyline layer
+                if (pGFlayer.FeatureClass.ShapeType != esriGeometryType.esriGeometryPolyline)
+                {
+                    MessageBox.Show("Please select a polyline layer.", "Must be Polyline", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+
+
+
+                // select the segments that are intersecting the psap boundaries
+
+                // the featureClass is the streets
+                // the envelope is the polygon boundaries
+                // http://help.arcgis.com/EN/sdk/10.0/ArcObjects_NET/componenthelp/index.html#/esriSpatialRelEnum_Constants/002500000086000000/
+
+                // use spatial filter to get segments that intersect polygons
+                // Create the spatial filter and set its spatial constraints.
+                ISpatialFilter spatialFilter = new SpatialFilterClass();
+                spatialFilter.Geometry = arcFeatClassDispaceCityCD as IGeometry;
+                spatialFilter.GeometryField = pGFlayer.FeatureClass.ShapeFieldName;
+                spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelCrosses; //.esriSpatialRelIntersects;
+
+                // Set the attribute constraints and subfields.
+                // We want to exclude ramps, highways and interstates.
+                //spatialFilter.WhereClause = "NAME <> 'Ramp' AND PRE_TYPE NOT IN ('Hwy', 'I')";
+                //spatialFilter.SubFields = "NAME, TYPE";
+
+                // Execute the query.
+                IFeatureCursor featureCursor = pGFlayer.FeatureClass.Search(spatialFilter, true);
+                IFeature arcFeature;
+
+                IFeatureSelection arcFeatSelect = (IFeatureSelection)pGFlayer;
+                
+                IQueryFilter arcQFilter = new QueryFilter();
+
+
+                while ((arcFeature = featureCursor.NextFeature()) != null)
+                {
+                    arcQFilter.WhereClause = "";
+                    arcQFilter.WhereClause = "OBJECTID = " + arcFeature.get_Value(arcFeature.Fields.FindField("OBJECTID"));
+                    arcFeatSelect.SelectFeatures(arcQFilter, esriSelectionResultEnum.esriSelectionResultAdd, false);
+                }
+
+
+                pActiveView.Refresh();
+                pActiveView.Refresh();
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+
+
+
+        }
+
+        private void btnSplitSelectSeg_Click(object sender, EventArgs e)
+        {
+            try
+			{
+
+                // get access to the psap boundaries
+                IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
+
+                // loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
+                //get access to the document and the active view
+                pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
+                pMap = pMxDocument.FocusMap;
+                pActiveView = pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
+
+                //make sure the user has selected a polyline layer
+                if (pMxDocument.SelectedLayer == null)
+                {
+                    MessageBox.Show("Please select the roads layer in the TOC.", "Select Layer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                if (!(pMxDocument.SelectedLayer is IFeatureLayer))
+                {
+                    MessageBox.Show("Please select polyline layer.", "Must be PolyLine", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                //cast the selected layer as a feature layer
+                IGeoFeatureLayer pGFlayer = (IGeoFeatureLayer)pMxDocument.SelectedLayer;
+
+                //check if the feaure layer is a polyline layer
+                if (pGFlayer.FeatureClass.ShapeType != esriGeometryType.esriGeometryPolyline)
+                {
+                    MessageBox.Show("Please select a polyline layer.", "Must be Polyline", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+
+                // get the selected features from the selected roads in the arcmap layer
+                ISelectionSet selectedFeatures = ((IFeatureSelection)pGFlayer).SelectionSet;
+                 
+                IQueryFilter arcQueryFilter = new QueryFilter();
+                arcQueryFilter.WhereClause = "";
+
+                ICursor arcCursor;
+                selectedFeatures.Search(null, false, out arcCursor);
+                
+                // create a ComReleaser for cursor management
+                using (ComReleaser comReleaser = new ComReleaser())
+                {
+                    IFeatureCursor arcFeatureCursor = (IFeatureCursor)arcCursor;
+                    comReleaser.ManageLifetime(arcFeatureCursor);
+
+                    IFeature arcFeatureRoadSegment;
+                    int intCount = 0;
+                    while ((arcFeatureRoadSegment = arcFeatureCursor.NextFeature()) != null)
+                    {
+                        intCount = intCount + 1;
+
+                        // select the polygon that the current segment intersects
+                        // use spatial filter to get segments that intersect polygons
+                        // Create the spatial filter and set its spatial constraints.
+                        ISpatialFilter spatialFilter = new SpatialFilterClass();
+                        spatialFilter.Geometry = (IGeometry)arcFeatureRoadSegment.Shape;
+                        spatialFilter.GeometryField = arcFeatClassDispaceCityCD.ShapeFieldName;
+                        spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+                        IFeature arcFeaturePSAPpoly;
+
+                        // Execute the query.
+                        using (ComReleaser comReleaser2 = new ComReleaser())
+                        {
+                            IFeatureCursor featureCursor = arcFeatClassDispaceCityCD.Search(spatialFilter, true);
+                            comReleaser2.ManageLifetime(featureCursor);
+                            arcFeaturePSAPpoly = featureCursor.NextFeature();                       
+                        }
+                        
+                        //// get all the interecting polygons
+                        //while ((arcFeature = featureCursor.NextFeature()) != null)
+                        //{
+                        //}
+
+
+
+
+
+
+
+                        // create points based on the intersecting locations of the road segment and the psap polygon
+                        List<IPoint> resultPoints = new List<IPoint>();
+                        ITopologicalOperator topOperator = (ITopologicalOperator)arcFeatureRoadSegment.Shape;
+                        IGeometry resultGeom = (IGeometry)topOperator.Intersect(arcFeaturePSAPpoly.Shape, esriGeometryDimension.esriGeometry0Dimension);
+
+                        IGeometryCollection pointCollection = (IGeometryCollection)resultGeom;
+
+                        for (int i = 0; i < pointCollection.GeometryCount; i++)
+                        {
+                            resultPoints.Add((IPoint)pointCollection.get_Geometry(i));
+                        }
+
+                        MessageBox.Show(pointCollection.GeometryCount.ToString());
+
+                        IPoint arcPoint = (IPoint)pointCollection.get_Geometry(0);
+                        MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString());
+
+                        // call agrc's split line tool/class to split the lines at point locations
+
+
+                    }
+                    MessageBox.Show(intCount.ToString());
+
+                }
+                
+                
+
+
+			}
+			catch (Exception ex)
+			{
+			MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+			"Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+			"Error Location:" + Environment.NewLine + ex.StackTrace,
+			"UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+			}
+
+
+
+
+
+
         }
 
 
