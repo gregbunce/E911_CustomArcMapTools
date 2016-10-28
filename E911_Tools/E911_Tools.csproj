@@ -41,6 +41,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <RegisterForComInterop>true</RegisterForComInterop>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -129,8 +130,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="btnEtlRoads.cs" />
+    <Compile Include="clsE911Globals.cs" />
     <Compile Include="clsE911StaticClass.cs" />
     <Compile Include="clsModelessDialog.cs" />
+    <Compile Include="clsSplitLine.cs" />
     <Compile Include="frmEtlRoads.cs">
       <SubType>Form</SubType>
     </Compile>

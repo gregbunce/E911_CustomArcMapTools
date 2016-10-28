@@ -16,6 +16,7 @@ using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.ArcMapUI;
 using ESRI.ArcGIS.ADF;
+using ESRI.ArcGIS.Editor;
 
 namespace E911_Tools
 {
@@ -23,9 +24,9 @@ namespace E911_Tools
     {
         // variables with class scope
         IFeatureClass pUtransFeatureClass;
-        IMap pMap;
-        IMxDocument pMxDocument;
-        IActiveView pActiveView;
+        //IMap pMap;
+        //IMxDocument pMxDocument;
+        //IActiveView pActiveView;
 
         //get access to the newly-created feature class with psap's schema
         Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
@@ -43,9 +44,23 @@ namespace E911_Tools
         {
             try
             {
+                // set the global application variable - from the button appliation hook
+                clsE911Globals.arcApplication = btnEtlRoads.m_application;
+
+                //get access to the document and the active view
+                //pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
+                clsE911Globals.pMxDocument = (IMxDocument)clsE911Globals.arcApplication.Document;
+                clsE911Globals.pMap = clsE911Globals.pMxDocument.FocusMap;
+                clsE911Globals.pActiveView = clsE911Globals.pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
+
                 // get access to the feature workspace
                 workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
                 arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
+
+                //get the editor extension
+                UID arcUID = new UID();
+                arcUID.Value = "esriEditor.Editor";
+                clsE911Globals.arcEditor = clsE911Globals.arcApplication.FindExtensionByCLSID(arcUID) as IEditor3;
 
 
             }
@@ -54,7 +69,7 @@ namespace E911_Tools
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
 
@@ -72,7 +87,7 @@ namespace E911_Tools
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -193,7 +208,7 @@ namespace E911_Tools
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "Custom E911 Tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
         }
@@ -550,7 +565,7 @@ namespace E911_Tools
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
@@ -590,7 +605,7 @@ namespace E911_Tools
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return null;
             }
         }
@@ -602,77 +617,77 @@ namespace E911_Tools
         {
             try
             {
-                // get access to the psap boundaries
-                IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
+                //////// get access to the psap boundaries
+                //////IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
 
-                // loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
-                //get access to the document and the active view
-                pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
-                pMap = pMxDocument.FocusMap;
-                pActiveView = pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
+                //////// loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
+                ////////get access to the document and the active view
+                //////pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
+                //////pMap = pMxDocument.FocusMap;
+                //////pActiveView = pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
 
-                //make sure the user has selected a polyline layer
-                if (pMxDocument.SelectedLayer == null)
-                {
-                    MessageBox.Show("Please select the roads layer in the TOC.", "Select Layer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-                if (!(pMxDocument.SelectedLayer is IFeatureLayer))
-                {
-                    MessageBox.Show("Please select polyline layer.", "Must be PolyLine", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
+                ////////make sure the user has selected a polyline layer
+                //////if (pMxDocument.SelectedLayer == null)
+                //////{
+                //////    MessageBox.Show("Please select the roads layer in the TOC.", "Select Layer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //////    return;
+                //////}
+                //////if (!(pMxDocument.SelectedLayer is IFeatureLayer))
+                //////{
+                //////    MessageBox.Show("Please select polyline layer.", "Must be PolyLine", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //////    return;
+                //////}
 
-                //cast the selected layer as a feature layer
-                IGeoFeatureLayer pGFlayer = (IGeoFeatureLayer)pMxDocument.SelectedLayer;
+                ////////cast the selected layer as a feature layer
+                //////IGeoFeatureLayer pGFlayer = (IGeoFeatureLayer)pMxDocument.SelectedLayer;
 
-                //check if the feaure layer is a polyline layer
-                if (pGFlayer.FeatureClass.ShapeType != esriGeometryType.esriGeometryPolyline)
-                {
-                    MessageBox.Show("Please select a polyline layer.", "Must be Polyline", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-
+                ////////check if the feaure layer is a polyline layer
+                //////if (pGFlayer.FeatureClass.ShapeType != esriGeometryType.esriGeometryPolyline)
+                //////{
+                //////    MessageBox.Show("Please select a polyline layer.", "Must be Polyline", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //////    return;
+                //////}
 
 
-                // select the segments that are intersecting the psap boundaries
 
-                // the featureClass is the streets
-                // the envelope is the polygon boundaries
-                // http://help.arcgis.com/EN/sdk/10.0/ArcObjects_NET/componenthelp/index.html#/esriSpatialRelEnum_Constants/002500000086000000/
 
-                // use spatial filter to get segments that intersect polygons
-                // Create the spatial filter and set its spatial constraints.
-                ISpatialFilter spatialFilter = new SpatialFilterClass();
-                spatialFilter.Geometry = arcFeatClassDispaceCityCD as IGeometry;
-                spatialFilter.GeometryField = pGFlayer.FeatureClass.ShapeFieldName;
-                spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelCrosses; //.esriSpatialRelIntersects;
+                //////// select the segments that are intersecting the psap boundaries
 
-                // Set the attribute constraints and subfields.
-                // We want to exclude ramps, highways and interstates.
-                //spatialFilter.WhereClause = "NAME <> 'Ramp' AND PRE_TYPE NOT IN ('Hwy', 'I')";
-                //spatialFilter.SubFields = "NAME, TYPE";
+                //////// the featureClass is the streets
+                //////// the envelope is the polygon boundaries
+                //////// http://help.arcgis.com/EN/sdk/10.0/ArcObjects_NET/componenthelp/index.html#/esriSpatialRelEnum_Constants/002500000086000000/
 
-                // Execute the query.
-                IFeatureCursor featureCursor = pGFlayer.FeatureClass.Search(spatialFilter, true);
-                IFeature arcFeature;
+                //////// use spatial filter to get segments that intersect polygons
+                //////// Create the spatial filter and set its spatial constraints.
+                //////ISpatialFilter spatialFilter = new SpatialFilterClass();
+                //////spatialFilter.Geometry = arcFeatClassDispaceCityCD as IGeometry;
+                //////spatialFilter.GeometryField = pGFlayer.FeatureClass.ShapeFieldName;
+                //////spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelCrosses; //.esriSpatialRelIntersects;
 
-                IFeatureSelection arcFeatSelect = (IFeatureSelection)pGFlayer;
+                //////// Set the attribute constraints and subfields.
+                //////// We want to exclude ramps, highways and interstates.
+                ////////spatialFilter.WhereClause = "NAME <> 'Ramp' AND PRE_TYPE NOT IN ('Hwy', 'I')";
+                ////////spatialFilter.SubFields = "NAME, TYPE";
+
+                //////// Execute the query.
+                //////IFeatureCursor featureCursor = pGFlayer.FeatureClass.Search(spatialFilter, true);
+                //////IFeature arcFeature;
+
+                //////IFeatureSelection arcFeatSelect = (IFeatureSelection)pGFlayer;
                 
-                IQueryFilter arcQFilter = new QueryFilter();
+                //////IQueryFilter arcQFilter = new QueryFilter();
 
 
-                while ((arcFeature = featureCursor.NextFeature()) != null)
-                {
-                    arcQFilter.WhereClause = "";
-                    arcQFilter.WhereClause = "OBJECTID = " + arcFeature.get_Value(arcFeature.Fields.FindField("OBJECTID"));
-                    arcFeatSelect.SelectFeatures(arcQFilter, esriSelectionResultEnum.esriSelectionResultAdd, false);
-                }
+                //////while ((arcFeature = featureCursor.NextFeature()) != null)
+                //////{
+                //////    arcQFilter.WhereClause = "";
+                //////    arcQFilter.WhereClause = "OBJECTID = " + arcFeature.get_Value(arcFeature.Fields.FindField("OBJECTID"));
+                //////    arcFeatSelect.SelectFeatures(arcQFilter, esriSelectionResultEnum.esriSelectionResultAdd, false);
+                //////}
 
 
-                pActiveView.Refresh();
-                pActiveView.Refresh();
+                //////clsE911Globals.pActiveView.Refresh();
+                //////clsE911Globals.pActiveView.Refresh();
 
 
 
@@ -683,7 +698,7 @@ namespace E911_Tools
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
 
 
@@ -694,30 +709,57 @@ namespace E911_Tools
         {
             try
 			{
+                // check if editing first
+                if (clsE911Globals.arcEditor.EditState == ESRI.ArcGIS.Editor.esriEditState.esriStateNotEditing)
+                {
+                    MessageBox.Show("You must be editing the psap roads in order to split lines.  Please start editing and then try again.", "Must Be Editing", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                // get minimun split legnth from txtbox
+                int intMinLength;
+                if (txtLengthMin.Text != "")
+                {
+                    intMinLength = Convert.ToInt16(txtLengthMin.Text);
+                }
+                else
+                {
+                    intMinLength = 0;
+                }
+
+             
+
+
+                bool blnAllSegsSplit = true;
+                bool blnNoZeroRanges = true;
+                int intCountTotal = 0;
+                int intCountSkipped = 0;
 
                 // get access to the psap boundaries
                 IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
 
                 // loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
-                //get access to the document and the active view
-                pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
-                pMap = pMxDocument.FocusMap;
-                pActiveView = pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
+                //////get access to the document and the active view
+                ////pMxDocument = (IMxDocument)btnEtlRoads.m_application.Document;
+                ////pMap = pMxDocument.FocusMap;
+                ////pActiveView = pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
 
                 //make sure the user has selected a polyline layer
-                if (pMxDocument.SelectedLayer == null)
+                if (clsE911Globals.pMxDocument.SelectedLayer == null)
                 {
                     MessageBox.Show("Please select the roads layer in the TOC.", "Select Layer", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
-                if (!(pMxDocument.SelectedLayer is IFeatureLayer))
+                if (!(clsE911Globals.pMxDocument.SelectedLayer is IFeatureLayer))
                 {
                     MessageBox.Show("Please select polyline layer.", "Must be PolyLine", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
 
                 //cast the selected layer as a feature layer
-                IGeoFeatureLayer pGFlayer = (IGeoFeatureLayer)pMxDocument.SelectedLayer;
+                IGeoFeatureLayer pGFlayer = (IGeoFeatureLayer)clsE911Globals.pMxDocument.SelectedLayer;
+                clsE911Globals.arcFeatClass_PSAPRoads = pGFlayer.FeatureClass;
+
 
                 //check if the feaure layer is a polyline layer
                 if (pGFlayer.FeatureClass.ShapeType != esriGeometryType.esriGeometryPolyline)
@@ -742,17 +784,16 @@ namespace E911_Tools
                     IFeatureCursor arcFeatureCursor = (IFeatureCursor)arcCursor;
                     comReleaser.ManageLifetime(arcFeatureCursor);
 
-                    IFeature arcFeatureRoadSegment;
-                    int intCount = 0;
-                    while ((arcFeatureRoadSegment = arcFeatureCursor.NextFeature()) != null)
+                    
+                    while ((clsE911Globals.arcFeatureRoadSegment = arcFeatureCursor.NextFeature()) != null)
                     {
-                        intCount = intCount + 1;
+                        intCountTotal = intCountTotal + 1;
 
                         // select the polygon that the current segment intersects
                         // use spatial filter to get segments that intersect polygons
                         // Create the spatial filter and set its spatial constraints.
                         ISpatialFilter spatialFilter = new SpatialFilterClass();
-                        spatialFilter.Geometry = (IGeometry)arcFeatureRoadSegment.Shape;
+                        spatialFilter.Geometry = (IGeometry)clsE911Globals.arcFeatureRoadSegment.Shape;
                         spatialFilter.GeometryField = arcFeatClassDispaceCityCD.ShapeFieldName;
                         spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
                         IFeature arcFeaturePSAPpoly;
@@ -764,44 +805,72 @@ namespace E911_Tools
                             comReleaser2.ManageLifetime(featureCursor);
                             arcFeaturePSAPpoly = featureCursor.NextFeature();                       
                         }
-                        
+
                         //// get all the interecting polygons
                         //while ((arcFeature = featureCursor.NextFeature()) != null)
                         //{
                         //}
 
 
-
-
-
-
-
-                        // create points based on the intersecting locations of the road segment and the psap polygon
-                        List<IPoint> resultPoints = new List<IPoint>();
-                        ITopologicalOperator topOperator = (ITopologicalOperator)arcFeatureRoadSegment.Shape;
-                        IGeometry resultGeom = (IGeometry)topOperator.Intersect(arcFeaturePSAPpoly.Shape, esriGeometryDimension.esriGeometry0Dimension);
-
-                        IGeometryCollection pointCollection = (IGeometryCollection)resultGeom;
-
-                        for (int i = 0; i < pointCollection.GeometryCount; i++)
+                        // check if a polygon intersect the current road segment, if not skip and move to the next selected road segment
+                        if (arcFeaturePSAPpoly != null)
                         {
-                            resultPoints.Add((IPoint)pointCollection.get_Geometry(i));
+                            // create points based on the intersecting locations of the road segment and the psap polygon
+                            List<IPoint> resultPoints = new List<IPoint>();
+                            ITopologicalOperator topOperator = (ITopologicalOperator)clsE911Globals.arcFeatureRoadSegment.Shape;
+                            IGeometry resultGeom = (IGeometry)topOperator.Intersect(arcFeaturePSAPpoly.Shape, esriGeometryDimension.esriGeometry0Dimension);
+
+                            IGeometryCollection pointCollection = (IGeometryCollection)resultGeom;
+
+                            for (int i = 0; i < pointCollection.GeometryCount; i++)
+                            {
+                                resultPoints.Add((IPoint)pointCollection.get_Geometry(i));
+                            }
+
+                            //MessageBox.Show(pointCollection.GeometryCount.ToString());
+
+                            clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(0);
+                            //MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString());                            
+                        }
+                        else
+                        {
+                            blnAllSegsSplit = false;
+                            intCountSkipped = intCountSkipped + 1;
                         }
 
-                        MessageBox.Show(pointCollection.GeometryCount.ToString());
-
-                        IPoint arcPoint = (IPoint)pointCollection.get_Geometry(0);
-                        MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString());
 
                         // call agrc's split line tool/class to split the lines at point locations
+                        // first ensure address ranges are not zero - b/c these can't be split
+                        string strLF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("L_F_ADD")).ToString();
+                        string strLT = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("L_T_ADD")).ToString();
+                        string strRF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
+                        string strRT= clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
+                        //string strSegLength = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")).ToString();
+                        long lngSegLength = Convert.ToInt64(clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")));
+                        if (((strLF == "0" & strLT == "0") | (strRF == "0" & strRT == "0")) | lngSegLength <= intMinLength)
+                        {
+                            blnNoZeroRanges = false;                       
+                        }
+                        else
+                        {
+                            clsSplitLine.SplitLineAtIntersection(); 
+                        }
 
 
                     }
-                    MessageBox.Show(intCount.ToString());
+                    //MessageBox.Show(intCount.ToString());
 
                 }
                 
-                
+                // show message box if any of the segments did not get split
+                if (blnAllSegsSplit == false)
+                {
+                    MessageBox.Show(intCountSkipped.ToString() + " of the selected " + intCountTotal.ToString() + " segments did not get split becuase no intersecting PSAP boundary was found.", "Not All Segments Spilt", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                if (blnNoZeroRanges == false)
+                {
+                    MessageBox.Show("One or more of the selected segments either had an address range of zero or the length was too short... so those segments did not get split.", "Not All Segments Spilt", MessageBoxButtons.OK, MessageBoxIcon.Information);                    
+                }
 
 
 			}
@@ -810,7 +879,7 @@ namespace E911_Tools
 			MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
 			"Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
 			"Error Location:" + Environment.NewLine + ex.StackTrace,
-			"UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 			}
 
 
@@ -818,6 +887,13 @@ namespace E911_Tools
 
 
 
+        }
+
+
+        // make sure only numbers go into the textbox
+        private void txtLengthMin_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
 
