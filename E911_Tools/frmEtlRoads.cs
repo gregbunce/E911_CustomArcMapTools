@@ -17,6 +17,7 @@ using ESRI.ArcGIS.Carto;
 using ESRI.ArcGIS.ArcMapUI;
 using ESRI.ArcGIS.ADF;
 using ESRI.ArcGIS.Editor;
+using ESRI.ArcGIS.Framework;
 
 namespace E911_Tools
 {
@@ -97,6 +98,7 @@ namespace E911_Tools
         {
             try
             {
+        
                 //// Create workspace name objects.
                 //IWorkspaceName sourceWorkspaceName = new WorkspaceNameClass();
                 //IWorkspaceName targetWorkspaceName = new WorkspaceNameClass();
@@ -617,6 +619,19 @@ namespace E911_Tools
         {
             try
             {
+                // open the out-of-the-box select by location tool
+
+                UID pUID = new UID();
+                pUID.Value = "{82B9951B-DD63-11D1-AA7F-00C04FA37860}";
+                //82B9951B-DD63-11D1-AA7F-00C04FA37860  esriArcMapUI.SelectByLayerCommand
+
+                ICommandBars commandBars = clsE911Globals.arcApplication.Document.CommandBars;
+                ICommandItem item = commandBars.Find(pUID) as ICommandItem;
+
+                item.Execute();
+
+
+
                 //////// get access to the psap boundaries
                 //////IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
 
@@ -716,6 +731,9 @@ namespace E911_Tools
                     return;
                 }
 
+                // show the cursor as busy
+                System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
+
                 // get minimun split legnth from txtbox
                 int intMinLength;
                 if (txtLengthMin.Text != "")
@@ -728,8 +746,6 @@ namespace E911_Tools
                 }
 
              
-
-
                 bool blnAllSegsSplit = true;
                 bool blnNoZeroRanges = true;
                 int intCountTotal = 0;
@@ -830,7 +846,8 @@ namespace E911_Tools
                             //MessageBox.Show(pointCollection.GeometryCount.ToString());
 
                             clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(0);
-                            //MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString());                            
+                            //MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString());     
+                       
                         }
                         else
                         {
@@ -839,22 +856,29 @@ namespace E911_Tools
                         }
 
 
-                        // call agrc's split line tool/class to split the lines at point locations
-                        // first ensure address ranges are not zero - b/c these can't be split
-                        string strLF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("L_F_ADD")).ToString();
-                        string strLT = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("L_T_ADD")).ToString();
-                        string strRF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
-                        string strRT= clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
-                        //string strSegLength = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")).ToString();
-                        long lngSegLength = Convert.ToInt64(clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")));
-                        if (((strLF == "0" & strLT == "0") | (strRF == "0" & strRT == "0")) | lngSegLength <= intMinLength)
+                        // make sure we have a point to split on... before we call the split line class
+                        if (clsE911Globals.arcPoint != null)
                         {
-                            blnNoZeroRanges = false;                       
+                            // call agrc's split line tool/class to split the lines at point locations
+                            // first ensure address ranges are not zero - b/c these can't be split
+                            string strLF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("L_F_ADD")).ToString();
+                            string strLT = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("L_T_ADD")).ToString();
+                            string strRF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
+                            string strRT= clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
+                            //string strSegLength = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")).ToString();
+                            long lngSegLength = Convert.ToInt64(clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")));
+                            if (((strLF == "0" & strLT == "0") | (strRF == "0" & strRT == "0")) | lngSegLength <= intMinLength)
+                            {
+                                blnNoZeroRanges = false;                       
+                            }
+                            else
+                            {
+                                clsSplitLine.SplitLineAtIntersection(); 
+                            }                            
                         }
-                        else
-                        {
-                            clsSplitLine.SplitLineAtIntersection(); 
-                        }
+
+
+
 
 
                     }
@@ -894,6 +918,53 @@ namespace E911_Tools
         private void txtLengthMin_KeyPress(object sender, KeyPressEventArgs e)
         {
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
+        }
+
+
+        // reproject the fgdb to wgs for spillman tools
+        private void btnReproject_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // open catalog dialog for selecting fgdb to project data
+                // open arcCatalog dialog box so user can select the feature class that contains the  psap's schema and unique, non-utrans segments
+                IGxDialog pGxDialog = new GxDialog();
+                pGxDialog.AllowMultiSelect = false;
+                pGxDialog.Title = "Select File Geodatabase to Reproject to WGS84";
+                IGxObjectFilter pGxObjectFilter = new GxFilterFileGeodatabases(); // GxFilterFGDBFeatureClasses();
+                pGxDialog.ObjectFilter = pGxObjectFilter;
+                //pGxDialog.Name = "";  //clears out any text in the feature class name
+
+
+                IEnumGxObject pEnumGxObject;
+
+
+                //open dialog so user can select the feature class
+                Boolean CancelBrowser; //cancel the dialog if button is clicked
+                CancelBrowser = pGxDialog.DoModalOpen(0, out pEnumGxObject); //.DoModalSave(0); //opens the dialog to save data
+                //if cancel was clicked, exit the method
+                if (CancelBrowser == false)
+                {
+                    return;
+                }
+                MessageBox.Show(pEnumGxObject.Next().FullName);
+
+
+
+
+                // reproject the data..........
+                // http://support.esri.com/technical-article/000010852
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
         }
 
 
