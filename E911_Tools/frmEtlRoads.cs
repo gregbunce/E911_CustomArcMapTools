@@ -18,6 +18,8 @@ using ESRI.ArcGIS.ArcMapUI;
 using ESRI.ArcGIS.ADF;
 using ESRI.ArcGIS.Editor;
 using ESRI.ArcGIS.Framework;
+using ESRI.ArcGIS.Geoprocessor;
+using ESRI.ArcGIS.Geoprocessing;
 
 namespace E911_Tools
 {
@@ -715,11 +717,10 @@ namespace E911_Tools
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
                 "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-
-
-
         }
 
+
+        // split the selected segments by way of calling the custom split line class
         private void btnSplitSelectSeg_Click(object sender, EventArgs e)
         {
             try
@@ -876,14 +877,8 @@ namespace E911_Tools
                                 clsSplitLine.SplitLineAtIntersection(); 
                             }                            
                         }
-
-
-
-
-
                     }
                     //MessageBox.Show(intCount.ToString());
-
                 }
                 
                 // show message box if any of the segments did not get split
@@ -895,8 +890,6 @@ namespace E911_Tools
                 {
                     MessageBox.Show("One or more of the selected segments either had an address range of zero or the length was too short... so those segments did not get split.", "Not All Segments Spilt", MessageBoxButtons.OK, MessageBoxIcon.Information);                    
                 }
-
-
 			}
 			catch (Exception ex)
 			{
@@ -905,13 +898,8 @@ namespace E911_Tools
 			"Error Location:" + Environment.NewLine + ex.StackTrace,
             "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 			}
-
-
-
-
-
-
         }
+
 
 
         // make sure only numbers go into the textbox
@@ -921,23 +909,23 @@ namespace E911_Tools
         }
 
 
+
         // reproject the fgdb to wgs for spillman tools
         private void btnReproject_Click(object sender, EventArgs e)
         {
             try
             {
+                // show the cursor as busy
+                System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
+
                 // open catalog dialog for selecting fgdb to project data
-                // open arcCatalog dialog box so user can select the feature class that contains the  psap's schema and unique, non-utrans segments
                 IGxDialog pGxDialog = new GxDialog();
                 pGxDialog.AllowMultiSelect = false;
                 pGxDialog.Title = "Select File Geodatabase to Reproject to WGS84";
                 IGxObjectFilter pGxObjectFilter = new GxFilterFileGeodatabases(); // GxFilterFGDBFeatureClasses();
                 pGxDialog.ObjectFilter = pGxObjectFilter;
                 //pGxDialog.Name = "";  //clears out any text in the feature class name
-
-
                 IEnumGxObject pEnumGxObject;
-
 
                 //open dialog so user can select the feature class
                 Boolean CancelBrowser; //cancel the dialog if button is clicked
@@ -947,23 +935,58 @@ namespace E911_Tools
                 {
                     return;
                 }
-                MessageBox.Show(pEnumGxObject.Next().FullName);
 
+                //IGxObject pGxObject = pEnumGxObject.Next();
 
+                string strFGDBLocation = pEnumGxObject.Next().FullName;
 
+                // Reproject the data..........
+                Geoprocessor gp = new Geoprocessor();
+                //gp.SetEnvironmentValue("workspace", @"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeReproTest.gdb");
+                gp.SetEnvironmentValue("workspace", strFGDBLocation);
 
-                // reproject the data..........
-                // http://support.esri.com/technical-article/000010852
+                IGpEnumList files = gp.ListFeatureClasses("*", "", "");
+                string file; // = files.Next();
 
+                IGpEnumList dfiles = gp.ListDatasets("*", "");
+                string dfile = dfiles.Next();
 
+                // loop through all the feature classes in the workspace and reproject them
+                while ((file = files.Next()) != "")
+                {
+                    MessageBox.Show(file);
 
+                    string f_in = file;
+                    //string f_out = @"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeReproTest.gdb\" + file + "_WGS84";
+                    string f_out = strFGDBLocation + @"\" + file + "_WGS84";
+                    string sys_out = @"K:\AGRC Projects\E911_Editing\Coordinate Systems\WGS 1984 Web Mercator (auxiliary sphere).prj";
+                    //string geo = "NAD_1983_To_WGS_1984_1";
+                    ESRI.ArcGIS.DataManagementTools.Project project = new ESRI.ArcGIS.DataManagementTools.Project();
+                    project.in_dataset = file;
+                    project.out_coor_system = sys_out;
+                    project.out_dataset = f_out;
+                    //project.transform_method = geo;
+
+                    IGeoProcessorResult gpresult = gp.Execute(project, null) as IGeoProcessorResult;
+
+                    // check the gp message count to see if any failed
+                    if (gpresult.MessageCount > 0)
+                    {
+                        //for (int Count = 0; Count <= gpresult.MessageCount - 1; Count++)
+                        //{
+
+                        //    Console.WriteLine(gpresult.GetMessage(Count));
+
+                        //}
+                    }
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
                 "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
