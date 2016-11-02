@@ -25,17 +25,32 @@ namespace E911_Tools
 {
     public partial class frmEtlRoads : Form
     {
+        string strDispatchSchema;
+        string strDispatchEtlName;
+        string strSourceWorkkSpace;
+        string strTargetWorkSpace;
+        IDataset arcDataSetETL2;
+
         // variables with class scope
         IFeatureClass pUtransFeatureClass;
         //IMap pMap;
         //IMxDocument pMxDocument;
         //IActiveView pActiveView;
+        IWorkspace workspaceE911;
+        IFeatureWorkspace featureWorkspaceE911;
+        IFeatureClass arcFeatClass_CustomSegs;
+        IFeatureClass arcFeatClass_CustomMMSegs;
+        IFeatureClass arcFeatClass_CityCd;
+        IFeatureClass arcFeatClass_EmsZone;
+        IFeatureClass arcFeatClass_FireZone;
+        IFeatureClass arcFeatClass_LawZone;
 
         //get access to the newly-created feature class with psap's schema
         Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
-        IWorkspaceFactory workspaceFactory; // = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-        IFeatureWorkspace arcFeatWorkspace; // = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
-
+        IWorkspaceFactory workspaceFactoryETL; // = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+        IFeatureWorkspace arcFeatWorkspaceETL; // = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
+        IWorkspaceFactory workspaceFactorySchema;
+        IFeatureWorkspace arcFeatWorkspaceSchema;
 
         public frmEtlRoads()
         {
@@ -47,6 +62,9 @@ namespace E911_Tools
         {
             try
             {
+                // show the cursor as busy
+                System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
+
                 // set the global application variable - from the button appliation hook
                 clsE911Globals.arcApplication = btnEtlRoads.m_application;
 
@@ -57,33 +75,20 @@ namespace E911_Tools
                 clsE911Globals.pActiveView = clsE911Globals.pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
 
                 // get access to the feature workspace
-                workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-                arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
+                workspaceFactoryETL = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                arcFeatWorkspaceETL = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeE911ETL.gdb", 0);
+                workspaceFactorySchema = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                arcFeatWorkspaceSchema = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SchemaFGDBs\StGeorgeE911Schema.gdb", 0);
+
+
+                // get access to the e911 database  - connect to sde
+                workspaceE911 = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:e911.agrc.utah.gov", "E911", "OSA", "sde.DEFAULT");
+                featureWorkspaceE911 = (IFeatureWorkspace)workspaceE911;
 
                 //get the editor extension
                 UID arcUID = new UID();
                 arcUID.Value = "esriEditor.Editor";
                 clsE911Globals.arcEditor = clsE911Globals.arcApplication.FindExtensionByCLSID(arcUID) as IEditor3;
-
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
-                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
-                "Error Location:" + Environment.NewLine + ex.StackTrace,
-                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            }
-
-
-        }
-
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-
             }
             catch (Exception ex)
             {
@@ -93,6 +98,8 @@ namespace E911_Tools
                 "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
+
+
 
 
         // this method is run when the user clicks the form's button
@@ -100,111 +107,139 @@ namespace E911_Tools
         {
             try
             {
-        
-                //// Create workspace name objects.
-                //IWorkspaceName sourceWorkspaceName = new WorkspaceNameClass();
-                //IWorkspaceName targetWorkspaceName = new WorkspaceNameClass();
-                //IName targetName = (IName)targetWorkspaceName;
+                // show the cursor as busy
+                System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
 
-                //// get the source feature class workspace from the form's dropdown menu
-                //if (cboPSAPname.Text == "StGeorge")
-                //{
-                //    // set the source workspace and feature class (this should eventually be in an enterprise database) - this is the fc for e911 roads editing, the odd segments we don't want in utrans
-                //    sourceWorkspaceName.PathName = @"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_Editing.gdb";
-                //    sourceWorkspaceName.WorkspaceFactoryProgID = "esriDataSourcesGDB.FileGDBWorkspaceFactory";
+                // check what dispatch center we're working on
+                strDispatchSchema = "";
+                strDispatchEtlName = "";
+                strSourceWorkkSpace = "";
+                strTargetWorkSpace = "";
 
-                //    // set the target workspace for the extracted and merged roads data
-                //    targetWorkspaceName.PathName = @"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb";
-                //    targetWorkspaceName.WorkspaceFactoryProgID = "esriDataSourcesGDB.FileGDBWorkspaceFactory";
-                //}
-                //else if (cboPSAPname.Text == "TOC")
-                //{
-                //    // set the source workspace and feature class (this should eventually be in an enterprise database) - this is the fc for e911 roads editing, the odd segments we don't want in utrans
-                //    //sourceWorkspaceName.PathName = @"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_Editing.gdb\StGeorge_Dispatch_Streets";
-                //    //sourceWorkspaceName.WorkspaceFactoryProgID = "esriDataSourcesGDB.FileGDBWorkspaceFactory";
+                // create dispatch variables based user selection in combobox 
+                switch (cboPSAPname.Text)
+                {
+                    case "StGeorge":
+                        strDispatchSchema = "StGeorgeSchema";
+                        strDispatchEtlName = "StGeorgeStreetsETL";
+                        strSourceWorkkSpace = @"K:\AGRC Projects\E911_Editing\SchemaFGDBs\StGeorgeE911Schema.gdb";
+                        strTargetWorkSpace = @"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeE911ETL.gdb";
+                        // get access to utrans roads as feature class
+                        arcFeatClass_CustomMMSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomMMSegments");
+                        arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomSegments");
+                        //arcFeatClass_CityCd = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CITYCD");
+                        //arcFeatClass_EmsZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_EMS_Zones");
+                        //arcFeatClass_FireZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Fire_Zones");
+                        //arcFeatClass_LawZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Law_Zones");
+                        break;
+                    case "TOC":
+                        strDispatchSchema = "";
+                        break;
+                }
 
-                //    //// set the target workspace for the extracted and merged roads data
-                //    //targetWorkspaceName.PathName = @"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb";
-                //    //targetWorkspaceName.WorkspaceFactoryProgID = "esriDataSourcesGDB.FileGDBWorkspaceFactory";
-                //}
 
+                // get access to the dispacth center's schema file
+                IFeatureClass arcFeatureClassSchema = arcFeatWorkspaceSchema.OpenFeatureClass(strDispatchSchema);
+
+                // see if the etl feature class already exists (maybe from last run of the tool) - if so rename it
+                IWorkspace2 arcWorkspace2_ETL = (IWorkspace2)arcFeatWorkspaceETL;
+                if (arcWorkspace2_ETL.get_NameExists(esriDatasetType.esriDTFeatureClass, strDispatchEtlName) == true)
+                {
+                    IFeatureClass arcFC_ETL = arcFeatWorkspaceETL.OpenFeatureClass(strDispatchEtlName);
+                    IDataset arcDataSetETL = (IDataset)arcFC_ETL;
+                    arcDataSetETL.Rename(strDispatchEtlName + "_RnOn" + DateTime.Now.ToString("yyyyMMdd"));
+                }
                 
-                //// Create a name object for the source feature class.
-                //IFeatureClassName featureClassNameSource = new FeatureClassNameClass();
-
-                //// Set the featureClassName properties.
-                //IDatasetName sourceDatasetName = (IDatasetName)featureClassNameSource;
-                //sourceDatasetName.WorkspaceName = sourceWorkspaceName;
-                //sourceDatasetName.Name = "StGeorge_Dispatch_Streets";
-                ////sourceDatasetName.Name = cboPSAPname.Text.ToString() + "_ETL_" + DateTime.Now.ToString("yyyyMMdd");
-                //IName sourceName=(IName)sourceDatasetName;
-
-                //// Create an enumerator for source datasets.
-                //IEnumName sourceEnumName = new NamesEnumeratorClass();
-                //IEnumNameEdit sourceEnumNameEdit = (IEnumNameEdit)sourceEnumName;
-
-                //// Add the name object for the source class to the enumerator.
-                //sourceEnumNameEdit.Add(sourceName);
-
-                //// Create a GeoDBDataTransfer object and a null name mapping enumerator.
-                //IGeoDBDataTransfer geoDBDataTransfer = new GeoDBDataTransferClass();
-                //IEnumNameMapping enumNameMapping = null;
-
-                //// Use the data transfer object to create a name mapping enumerator.
-                //Boolean conflictsFound = geoDBDataTransfer.GenerateNameMapping(sourceEnumName, targetName, out enumNameMapping);
-                //enumNameMapping.Reset();
-
-                //// Check for conflicts.
-                //if (conflictsFound)
-                //{
-                //    // Iterate through each name mapping.
-                //    INameMapping nameMapping = null;
-                //    while ((nameMapping = enumNameMapping.Next()) != null)
-                //    {
-                //        // Resolve the mapping's conflict (if there is one).
-                //        if (nameMapping.NameConflicts)
-                //        {
-                //            nameMapping.TargetName = nameMapping.GetSuggestedName(targetName);
-                //        }
-
-                //        // See if the mapping's children have conflicts.
-                //        IEnumNameMapping childEnumNameMapping = nameMapping.Children;
-                //        if (childEnumNameMapping != null)
-                //        {
-                //            childEnumNameMapping.Reset();
-
-                //            // Iterate through each child mapping.
-                //            INameMapping childNameMapping = null;
-                //            while ((childNameMapping = childEnumNameMapping.Next()) != null)
-                //            {
-                //                if (childNameMapping.NameConflicts)
-                //                {
-                //                    childNameMapping.TargetName = childNameMapping.GetSuggestedName
-                //                        (targetName);
-                //                }
-                //            }
-                //        }
-                //    }
-                //}
-
-                //// Start the transfer.
-                //geoDBDataTransfer.Transfer(enumNameMapping, targetName);
-
-
-
-                //// rename the newly copied feature class
-                //IWorkspaceFactory arcWorkspaceFactory = new ESRI.ArcGIS.DataSourcesGDB.FileGDBWorkspaceFactory();
-                //IFeatureWorkspace arcFeatWorkspace = (IFeatureWorkspace)arcWorkspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb",0);
-                //IFeatureClass arcFeatClass_ETL = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_Streets");
                 
-                //IDataset targetDataset = (IDataset)arcFeatClass_ETL;
-                //targetDataset.Rename(cboPSAPname.Text.ToString() + "_ETL_" + DateTime.Now.ToString("yyyyMMdd"));
+                // transfer the feature class to the staging ground fgdb so we can load data into it
+                // Create workspace name objects.
+                IWorkspaceName sourceWorkspaceName = new WorkspaceNameClass();
+                IWorkspaceName targetWorkspaceName = new WorkspaceNameClass();
+                IName targetName = (IName)targetWorkspaceName;
+
+                // set the source workspace and feature class (this should eventually be in an enterprise database) - this is the fc for e911 roads editing, the odd segments we don't want in utrans
+                sourceWorkspaceName.PathName = strSourceWorkkSpace;
+                sourceWorkspaceName.WorkspaceFactoryProgID = "esriDataSourcesGDB.FileGDBWorkspaceFactory";
+
+                // set the target workspace for the extracted and merged roads data
+                targetWorkspaceName.PathName = strTargetWorkSpace;
+                targetWorkspaceName.WorkspaceFactoryProgID = "esriDataSourcesGDB.FileGDBWorkspaceFactory";
 
 
 
-                // insert rows from utrans
+                // Create a name object for the source feature class.
+                IFeatureClassName featureClassNameSource = new FeatureClassNameClass();
+
+                // Set the featureClassName properties.
+                IDatasetName sourceDatasetName = (IDatasetName)featureClassNameSource;
+                sourceDatasetName.WorkspaceName = sourceWorkspaceName;
+                sourceDatasetName.Name = strDispatchSchema;
+                IName sourceName = (IName)sourceDatasetName;
+
+                // Create an enumerator for source datasets.
+                IEnumName sourceEnumName = new NamesEnumeratorClass();
+                IEnumNameEdit sourceEnumNameEdit = (IEnumNameEdit)sourceEnumName;
+
+                // Add the name object for the source class to the enumerator.
+                sourceEnumNameEdit.Add(sourceName);
+
+                // Create a GeoDBDataTransfer object and a null name mapping enumerator.
+                IGeoDBDataTransfer geoDBDataTransfer = new GeoDBDataTransferClass();
+                IEnumNameMapping enumNameMapping = null;
+
+                // Use the data transfer object to create a name mapping enumerator.
+                Boolean conflictsFound = geoDBDataTransfer.GenerateNameMapping(sourceEnumName, targetName, out enumNameMapping);
+                enumNameMapping.Reset();
+
+                // Check for conflicts.
+                if (conflictsFound)
+                {
+                    // Iterate through each name mapping.
+                    INameMapping nameMapping = null;
+                    while ((nameMapping = enumNameMapping.Next()) != null)
+                    {
+                        // Resolve the mapping's conflict (if there is one).
+                        if (nameMapping.NameConflicts)
+                        {
+                            nameMapping.TargetName = nameMapping.GetSuggestedName(targetName);
+                        }
+
+                        // See if the mapping's children have conflicts.
+                        IEnumNameMapping childEnumNameMapping = nameMapping.Children;
+                        if (childEnumNameMapping != null)
+                        {
+                            childEnumNameMapping.Reset();
+
+                            // Iterate through each child mapping.
+                            INameMapping childNameMapping = null;
+                            while ((childNameMapping = childEnumNameMapping.Next()) != null)
+                            {
+                                if (childNameMapping.NameConflicts)
+                                {
+                                    childNameMapping.TargetName = childNameMapping.GetSuggestedName
+                                        (targetName);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Start the transfer.
+                geoDBDataTransfer.Transfer(enumNameMapping, targetName);
+
+
+                // rename the newly copied feature class
+                IFeatureClass arcFC_ETL2 = arcFeatWorkspaceETL.OpenFeatureClass(strDispatchSchema);
+                arcDataSetETL2 = (IDataset)arcFC_ETL2;
+                arcDataSetETL2.Rename(strDispatchEtlName);
+
+
+                // load the custom segments and the mile marker segments to the blank streets etl feature class
+                loadCustomSegmentsFromE911(arcFeatClass_CustomMMSegs, arcDataSetETL2);
+                loadCustomSegmentsFromE911(arcFeatClass_CustomSegs, arcDataSetETL2);
+                
+                // call the method to load (insert) segments data from utrans
                 insertNewFeaturesFromUtrans();
-
 
             }
             catch (Exception ex)
@@ -214,8 +249,42 @@ namespace E911_Tools
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
                 "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-
         }
+
+
+
+        // load the custom segments into the etl feature class
+        private void loadCustomSegmentsFromE911(IFeatureClass arcFcInput, IDataset arcFcTarget)
+        {
+            try
+            {
+                // show the cursor as busy
+                System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
+
+                Geoprocessor geoProcessor = new Geoprocessor();
+                ESRI.ArcGIS.DataManagementTools.Append append = new ESRI.ArcGIS.DataManagementTools.Append();
+                append.inputs = arcFcInput; // e911 custom segs
+                append.target = arcFcTarget; // the newly created etl dataset
+                append.schema_type = "TEST";  // NO_TEST will not give you errors but you might not get all the data
+                
+                IGeoProcessorResult result = (IGeoProcessorResult)geoProcessor.Execute(append, null);
+
+                // see if there were any messages
+                if (result.MessageCount > 0)
+                {
+                    // loop though the messages and report them
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
 
 
 
@@ -233,7 +302,7 @@ namespace E911_Tools
                 pBar.Visible = true;
                 pBar.Minimum = 1;
                 pBar.Value = 1;
-                pBar.Step = 1;
+                pBar.Step = 10;
 
 
                 ////get access to the newly-created feature class with psap's schema
@@ -242,7 +311,7 @@ namespace E911_Tools
                 //IFeatureWorkspace arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
                 //IFeatureWorkspace arcFeatWorkspace = (IFeatureWorkspace)workspaceFactory;
                 //IFeatureClass arcFeatClassNewSchemaFeat = arcFeatWorkspace.OpenFeatureClass(cboPSAPname.Text.ToString() + "_ETL_" + DateTime.Now.ToString("yyyyMMdd"));
-                IFeatureClass arcFeatClassNewSchemaFeat = arcFeatWorkspace.OpenFeatureClass("StGeorge_ETL_20161021");
+                IFeatureClass arcFeatClassNewSchemaFeat = arcFeatWorkspaceETL.OpenFeatureClass(strDispatchEtlName);
                 
                 // get access to utrans database and the centerline feature class
                 //connect to sde
@@ -725,6 +794,14 @@ namespace E911_Tools
         {
             try
 			{
+                // check if zone is selected...
+                if (cboSelectLawZone.Text == "")
+                {
+                    MessageBox.Show("Please select a boundary from the drop-down menu to base split on.", "Must select boundary", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+
                 // check if editing first
                 if (clsE911Globals.arcEditor.EditState == ESRI.ArcGIS.Editor.esriEditState.esriStateNotEditing)
                 {
@@ -752,8 +829,46 @@ namespace E911_Tools
                 int intCountTotal = 0;
                 int intCountSkipped = 0;
 
-                // get access to the psap boundaries
-                IFeatureClass arcFeatClassDispaceCityCD = arcFeatWorkspace.OpenFeatureClass("StGeorge_Dispatch_CITYCD");
+                // get access to the boundaries feature class
+                string strSplitBoundaryName = "";
+                //string strDispatchCenterName = "";
+
+                // check what dispactch center we're working with
+                if (cboPSAPname.Text != "")
+                {
+                    switch (cboSelectLawZone.Text)
+                    {
+                        case "StGeorge":
+                            switch (cboSelectLawZone.Text)
+                            {
+                                case "City CD":
+                                    strSplitBoundaryName = "E911.E911ADMIN.StGeorge_CITYCD";
+                                    break;
+                                case "EMS Zones":
+                                    strSplitBoundaryName = "E911.E911ADMIN.StGeorge_EMS_Zones";
+                                    break;
+                                case "Fire Zones":
+                                    strSplitBoundaryName = "E911.E911ADMIN.StGeorge_Fire_Zones";
+                                    break;
+                                case "Law Zones":
+                                    strSplitBoundaryName = "E911.E911ADMIN.StGeorge_Law_Zones";
+                                    break;
+                            }  
+                            break;
+                        case "TOC":
+                            
+                            break;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please select a dispactch center from top drop-down list to base split boundaries on.", "Must select dispatch center", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+
+                // get access to the selected boundary from the selected dispatch center
+                IFeatureClass arcFeatClassSplitBoundary = arcFeatWorkspaceETL.OpenFeatureClass(strSplitBoundaryName);
 
                 // loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
                 //////get access to the document and the active view
@@ -811,14 +926,14 @@ namespace E911_Tools
                         // Create the spatial filter and set its spatial constraints.
                         ISpatialFilter spatialFilter = new SpatialFilterClass();
                         spatialFilter.Geometry = (IGeometry)clsE911Globals.arcFeatureRoadSegment.Shape;
-                        spatialFilter.GeometryField = arcFeatClassDispaceCityCD.ShapeFieldName;
+                        spatialFilter.GeometryField = arcFeatClassSplitBoundary.ShapeFieldName;
                         spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
                         IFeature arcFeaturePSAPpoly;
 
                         // Execute the query.
                         using (ComReleaser comReleaser2 = new ComReleaser())
                         {
-                            IFeatureCursor featureCursor = arcFeatClassDispaceCityCD.Search(spatialFilter, true);
+                            IFeatureCursor featureCursor = arcFeatClassSplitBoundary.Search(spatialFilter, true);
                             comReleaser2.ManageLifetime(featureCursor);
                             arcFeaturePSAPpoly = featureCursor.NextFeature();                       
                         }
@@ -974,12 +1089,29 @@ namespace E911_Tools
                     {
                         //for (int Count = 0; Count <= gpresult.MessageCount - 1; Count++)
                         //{
-
                         //    Console.WriteLine(gpresult.GetMessage(Count));
-
                         //}
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "E911 ArcMap tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+
+
+
+        // this method is run when the user changes the selection on the combobox
+        private void cboPSAPname_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+
             }
             catch (Exception ex)
             {
