@@ -795,7 +795,7 @@ namespace E911_Tools
             try
 			{
                 // check if zone is selected...
-                if (cboSelectLawZone.Text == "")
+                if (cboSelectLawZone.SelectedItem == null)
                 {
                     MessageBox.Show("Please select a boundary from the drop-down menu to base split on.", "Must select boundary", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -834,12 +834,12 @@ namespace E911_Tools
                 //string strDispatchCenterName = "";
 
                 // check what dispactch center we're working with
-                if (cboPSAPname.Text != "")
+                if (cboPSAPname.SelectedItem != null)
                 {
-                    switch (cboSelectLawZone.Text)
+                    switch (cboPSAPname.Text.ToString())
                     {
                         case "StGeorge":
-                            switch (cboSelectLawZone.Text)
+                            switch (cboSelectLawZone.Text.ToString())
                             {
                                 case "City CD":
                                     strSplitBoundaryName = "E911.E911ADMIN.StGeorge_CITYCD";
@@ -868,7 +868,7 @@ namespace E911_Tools
 
 
                 // get access to the selected boundary from the selected dispatch center
-                IFeatureClass arcFeatClassSplitBoundary = arcFeatWorkspaceETL.OpenFeatureClass(strSplitBoundaryName);
+                IFeatureClass arcFeatClassSplitBoundary = featureWorkspaceE911.OpenFeatureClass(strSplitBoundaryName);
 
                 // loop through the maps layer and get the highlighted layer and make sure it's a polyline layer
                 //////get access to the document and the active view
@@ -961,8 +961,20 @@ namespace E911_Tools
 
                             //MessageBox.Show(pointCollection.GeometryCount.ToString());
 
-                            clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(0);
-                            //MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString());     
+                            //check if there's more than one intersecting polygon, if so take the second, it's further along the line segment boundary
+                            if (pointCollection.GeometryCount > 1)
+	                        {
+                                clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(1);    		 
+	                        }
+                            else
+                            {
+                                clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(0);
+                                //MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString()); 
+                            }
+                            
+
+
+    
                        
                         }
                         else
@@ -1069,12 +1081,12 @@ namespace E911_Tools
                 // loop through all the feature classes in the workspace and reproject them
                 while ((file = files.Next()) != "")
                 {
-                    MessageBox.Show(file);
+                    //MessageBox.Show(file);
 
                     string f_in = file;
                     //string f_out = @"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeReproTest.gdb\" + file + "_WGS84";
                     string f_out = strFGDBLocation + @"\" + file + "_WGS84";
-                    string sys_out = @"K:\AGRC Projects\E911_Editing\Coordinate Systems\WGS 1984 Web Mercator (auxiliary sphere).prj";
+                    string sys_out = @"K:\AGRC Projects\E911_Editing\Coordinate Systems\WGS 1984.prj";
                     //string geo = "NAD_1983_To_WGS_1984_1";
                     ESRI.ArcGIS.DataManagementTools.Project project = new ESRI.ArcGIS.DataManagementTools.Project();
                     project.in_dataset = file;
