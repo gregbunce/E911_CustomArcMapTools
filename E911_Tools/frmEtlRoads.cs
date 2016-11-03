@@ -40,6 +40,7 @@ namespace E911_Tools
         IFeatureWorkspace featureWorkspaceE911;
         IFeatureClass arcFeatClass_CustomSegs;
         IFeatureClass arcFeatClass_CustomMMSegs;
+        IFeatureClass arcFeatClass_CustomFwySegs;
         IFeatureClass arcFeatClass_CityCd;
         IFeatureClass arcFeatClass_EmsZone;
         IFeatureClass arcFeatClass_FireZone;
@@ -127,6 +128,7 @@ namespace E911_Tools
                         // get access to utrans roads as feature class
                         arcFeatClass_CustomMMSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomMMSegments");
                         arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomSegments");
+                        arcFeatClass_CustomFwySegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomFwySegments");
                         //arcFeatClass_CityCd = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CITYCD");
                         //arcFeatClass_EmsZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_EMS_Zones");
                         //arcFeatClass_FireZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Fire_Zones");
@@ -147,7 +149,7 @@ namespace E911_Tools
                 {
                     IFeatureClass arcFC_ETL = arcFeatWorkspaceETL.OpenFeatureClass(strDispatchEtlName);
                     IDataset arcDataSetETL = (IDataset)arcFC_ETL;
-                    arcDataSetETL.Rename(strDispatchEtlName + "_RnOn" + DateTime.Now.ToString("yyyyMMdd"));
+                    arcDataSetETL.Rename(strDispatchEtlName + "_OldOn" + DateTime.Now.ToString("yyyyMMdd"));
                 }
                 
                 
@@ -237,6 +239,7 @@ namespace E911_Tools
                 // load the custom segments and the mile marker segments to the blank streets etl feature class
                 loadCustomSegmentsFromE911(arcFeatClass_CustomMMSegs, arcDataSetETL2);
                 loadCustomSegmentsFromE911(arcFeatClass_CustomSegs, arcDataSetETL2);
+                loadCustomSegmentsFromE911(arcFeatClass_CustomFwySegs, arcDataSetETL2);
                 
                 // call the method to load (insert) segments data from utrans
                 insertNewFeaturesFromUtrans();
@@ -654,7 +657,7 @@ namespace E911_Tools
                 switch (strPSAPName)
                 {
                     case "StGeorge":
-                        strCountyList = "COFIPS = 49053 AND CARTOCODE <> 99";
+                        strCountyList = "COFIPS = 49053 AND CARTOCODE <> 99 and streettype not in ('FWY','RAMP')";
                         //strCountyList = "COFIPS = '49053' AND STREETNAME IS NOT NULL AND (( L_F_ADD IS NOT NULL AND L_T_ADD IS NOT NULL AND R_F_ADD IS NOT NULL AND R_T_ADD IS NOT NULL) AND (L_F_ADD <> 0 AND L_T_ADD <> 0 AND R_F_ADD <> 0 AND R_T_ADD <> 0))";
                         break;
                     case "TOC":
@@ -959,30 +962,64 @@ namespace E911_Tools
                                 resultPoints.Add((IPoint)pointCollection.get_Geometry(i));
                             }
 
-                            //MessageBox.Show(pointCollection.GeometryCount.ToString());
+                            // check how many points are in the point collection before we look for the second one
+                            // check how far along the line the first point in the point collection is before we designate the point as a split location
+                            // this avoids the error stating that the line could not be split b/c it would result in a zero legnth polyline
+                            // it happens when the point from the intersect is at the end of the line, touching the boundary... rather we want the intersect point that is further down the polyline
 
-                            //check if there's more than one intersecting polygon, if so take the second, it's further along the line segment boundary
-                            if (pointCollection.GeometryCount > 1)
-	                        {
-                                clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(1);    		 
-	                        }
-                            else
+                            if (pointCollection.GeometryCount == 0)
+                            {
+                                // exit the loop and get the next selected road segment
+                                //MessageBox.Show("continue");
+                                continue;
+                            }
+                            else if (pointCollection.GeometryCount == 1)
                             {
                                 clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(0);
-                                //MessageBox.Show(arcPoint.X.ToString() + ", " + arcPoint.Y.ToString()); 
+                                IPolyline arcPolyLine_RoadSeg = (IPolyline)clsE911Globals.arcFeatureRoadSegment.Shape;
+
+                                //double dblDistAlongLine = getDistanceAlongPoint(clsE911Globals.arcPoint, arcPolyLine_RoadSeg);
+                                double dblDistAlongLine = getDistanceAlongPoint(clsE911Globals.arcPoint, arcPolyLine_RoadSeg);
+                                if (dblDistAlongLine  < .05 | dblDistAlongLine > .95) // less than 10% or greater than 90% along the line (depending on which way the line is pointed)
+                                {
+                                    // exit the loop and get the next selected road segment
+                                    //MessageBox.Show("continue");
+                                    continue;
+                                }
                             }
-                            
+                            else
+                            {
+                                // there's more than one point in the collection we can move to the next needed
+                                clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(0);
+                                IPolyline arcPolyLine_RoadSeg = (IPolyline)clsE911Globals.arcFeatureRoadSegment.Shape;
 
+                                double dblDistAlongLine = getDistanceAlongPoint(clsE911Globals.arcPoint, arcPolyLine_RoadSeg);
+                                if (dblDistAlongLine < .05 | dblDistAlongLine > .95) // less than 10% or greater than 90% along the line (depending on which way the line is pointed)
+                                {
+                                    clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(1);
 
-    
-                       
+                                    // check the second point in the collection to see if it's also close to the edge of the line
+                                    double dblDistAlongLine2 = getDistanceAlongPoint(clsE911Globals.arcPoint, arcPolyLine_RoadSeg);
+                                    if (dblDistAlongLine2 < .05 | dblDistAlongLine2 > .95) // less than 10% or greater than 90% along the line (depending on which way the line is pointed)
+                                    {
+                                        // try to get the third point in the collection
+                                        if (pointCollection.GeometryCount > 2)
+                                        {
+                                            clsE911Globals.arcPoint = (IPoint)pointCollection.get_Geometry(2);
+                                        }
+                                        else
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
                         }
                         else
                         {
                             blnAllSegsSplit = false;
                             intCountSkipped = intCountSkipped + 1;
                         }
-
 
                         // make sure we have a point to split on... before we call the split line class
                         if (clsE911Globals.arcPoint != null)
@@ -1007,6 +1044,8 @@ namespace E911_Tools
                     }
                     //MessageBox.Show(intCount.ToString());
                 }
+
+                MessageBox.Show("Done spliting selected lines! Due to rules in place, the ones still selected did NOT get split.", "Done!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 // show message box if any of the segments did not get split
                 if (blnAllSegsSplit == false)
@@ -1029,11 +1068,13 @@ namespace E911_Tools
 
 
 
+
         // make sure only numbers go into the textbox
         private void txtLengthMin_KeyPress(object sender, KeyPressEventArgs e)
         {
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
+
 
 
 
@@ -1135,6 +1176,19 @@ namespace E911_Tools
         }
 
 
+
+
+        // check how far the point is along the curve - before splitting - to make sure the split is not going to result in an error ("Split point results in a zero length polyline" returned from IFeatureEdit.Split())
+        double getDistanceAlongPoint(IPoint point, IPolyline polyline)
+        {
+            var outPnt = new PointClass() as IPoint;
+            double distAlong = double.NaN;
+            double distFrom = double.NaN;
+            bool bRight = false;
+            polyline.QueryPointAndDistance(esriSegmentExtension.esriNoExtension, point, true, outPnt, ref distAlong, ref distFrom, ref bRight);
+
+            return distAlong;
+        }
 
 
     }

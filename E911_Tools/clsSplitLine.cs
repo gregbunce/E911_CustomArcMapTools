@@ -610,7 +610,17 @@ namespace E911_Tools
 
 
 
+        ////// check how far the point is along the curve - before splitting - to make sure the split is not going to result in an error ("Split point results in a zero length polyline" returned from IFeatureEdit.Split())
+        ////double GetDistanceAt(IPoint point, IPolyline polyline)
+        ////{
+        ////    var outPnt = new PointClass() as IPoint;
+        ////    double distAlong = double.NaN;
+        ////    double distFrom = double.NaN;
+        ////    bool bRight = false;
+        ////    polyline.QueryPointAndDistance(esriSegmentExtension.esriNoExtension, point, true, outPnt, ref distAlong, ref distFrom, ref bRight);
 
+        ////    return distAlong;
+        ////}
 
 
 
