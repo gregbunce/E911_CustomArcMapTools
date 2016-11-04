@@ -668,7 +668,7 @@ namespace E911_Tools
                 switch (strPSAPName)
                 {
                     case "StGeorge":
-                        strCountyList = "COFIPS = 49053 AND CARTOCODE <> 99 and streettype not in ('FWY','RAMP')";
+                        strCountyList = "CARTOCODE <> 99 and streettype not in ('FWY','RAMP')";
                         //strCountyList = "COFIPS = '49053' AND STREETNAME IS NOT NULL AND (( L_F_ADD IS NOT NULL AND L_T_ADD IS NOT NULL AND R_F_ADD IS NOT NULL AND R_T_ADD IS NOT NULL) AND (L_F_ADD <> 0 AND L_T_ADD <> 0 AND R_F_ADD <> 0 AND R_T_ADD <> 0))";
                         strCountyPolyWhereClause = "FIPS_STR = 49053";
                         //strCountyPolyWhereClause = "FIPS_STR in (49053, 49021)"; // testing to see if more than one poly can be buffered via union
