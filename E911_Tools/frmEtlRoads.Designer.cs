@@ -51,6 +51,8 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnSelectIntersectSegs = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txtBuffer = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox7.SuspendLayout();
@@ -93,7 +95,7 @@
             // 
             // pBar
             // 
-            this.pBar.Location = new System.Drawing.Point(26, 58);
+            this.pBar.Location = new System.Drawing.Point(19, 65);
             this.pBar.Name = "pBar";
             this.pBar.Size = new System.Drawing.Size(430, 23);
             this.pBar.TabIndex = 4;
@@ -102,7 +104,7 @@
             // 
             this.lblProgressBar.AutoSize = true;
             this.lblProgressBar.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProgressBar.Location = new System.Drawing.Point(27, 41);
+            this.lblProgressBar.Location = new System.Drawing.Point(20, 48);
             this.lblProgressBar.Name = "lblProgressBar";
             this.lblProgressBar.Size = new System.Drawing.Size(94, 13);
             this.lblProgressBar.TabIndex = 5;
@@ -110,6 +112,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.txtBuffer);
+            this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.lblProgressBar);
             this.groupBox1.Controls.Add(this.pBar);
             this.groupBox1.Controls.Add(this.btnETLtoPSAP);
@@ -212,6 +216,7 @@
             this.txtLengthMin.TabIndex = 3;
             this.txtLengthMin.Text = "20";
             this.txtLengthMin.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtLengthMin.TextChanged += new System.EventHandler(this.txtLengthMin_TextChanged);
             this.txtLengthMin.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtLengthMin_KeyPress);
             // 
             // label5
@@ -327,6 +332,27 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Select Dispatch Center";
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(43, 29);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(200, 13);
+            this.label9.TabIndex = 6;
+            this.label9.Text = "Apply buffer to UTRANS roads in meters:";
+            // 
+            // txtBuffer
+            // 
+            this.txtBuffer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBuffer.Location = new System.Drawing.Point(248, 26);
+            this.txtBuffer.Name = "txtBuffer";
+            this.txtBuffer.Size = new System.Drawing.Size(46, 20);
+            this.txtBuffer.TabIndex = 7;
+            this.txtBuffer.Text = "0";
+            this.txtBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtBuffer.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtBuffer_KeyPress);
+            // 
             // frmEtlRoads
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -380,5 +406,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox txtBuffer;
+        private System.Windows.Forms.Label label9;
     }
 }

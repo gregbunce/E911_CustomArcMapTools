@@ -739,8 +739,10 @@ namespace E911_Tools
 
 
                 // run the buffer on the county/counties
+                int intTxtBoxBuffer = Convert.ToInt16(txtBuffer.Text);
+
                 ITopologicalOperator arcTopoOp2 = (ITopologicalOperator)arcPoly;
-                IPolygon arcPolyCountyBuffer = arcTopoOp2.Buffer(10) as IPolygon;
+                IPolygon arcPolyCountyBuffer = arcTopoOp2.Buffer(intTxtBoxBuffer) as IPolygon;
 
 
                 // create a spatial filter to get the utrans segments with a query filter to exclude ramps, freeways, and cartocode 99
@@ -1270,6 +1272,18 @@ namespace E911_Tools
             polyline.QueryPointAndDistance(esriSegmentExtension.esriNoExtension, point, true, outPnt, ref distAlong, ref distFrom, ref bRight);
 
             return distAlong;
+        }
+
+        private void txtLengthMin_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
+        // make sure the user can only imput numbers for a buffer unit
+        private void txtBuffer_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
 
