@@ -63,5 +63,18 @@ namespace E911_Tools
             get;
             set;
         }
+
+        public static IFeatureClass arcFeatClass_CountiesSGID
+        {
+            get;
+            set;
+        }
+
+        public static IFeature arcFeature_CountyPoly
+        {
+            get;
+            set;
+        }
+
     }
 }

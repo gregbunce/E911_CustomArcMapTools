@@ -36,8 +36,6 @@ namespace E911_Tools
         //IMap pMap;
         //IMxDocument pMxDocument;
         //IActiveView pActiveView;
-        IWorkspace workspaceE911;
-        IFeatureWorkspace featureWorkspaceE911;
         IFeatureClass arcFeatClass_CustomSegs;
         IFeatureClass arcFeatClass_CustomMMSegs;
         IFeatureClass arcFeatClass_CustomFwySegs;
@@ -52,6 +50,11 @@ namespace E911_Tools
         IFeatureWorkspace arcFeatWorkspaceETL; // = (IFeatureWorkspace)workspaceFactory.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\SaintGeorgePSAP_ETL.gdb", 0);
         IWorkspaceFactory workspaceFactorySchema;
         IFeatureWorkspace arcFeatWorkspaceSchema;
+        IWorkspace workspaceE911;
+        IFeatureWorkspace featureWorkspaceE911;
+        IWorkspace workspaceSGID;
+        IFeatureWorkspace featureWorkspaceSGID;
+
 
         public frmEtlRoads()
         {
@@ -86,6 +89,9 @@ namespace E911_Tools
                 workspaceE911 = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:e911.agrc.utah.gov", "E911", "OSA", "sde.DEFAULT");
                 featureWorkspaceE911 = (IFeatureWorkspace)workspaceE911;
 
+                workspaceSGID = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:sgid.agrc.utah.gov", "SGID10", "DBMS", "sde.DEFAULT", "agrc", "agrc");
+                featureWorkspaceSGID = (IFeatureWorkspace)workspaceSGID;
+
                 //get the editor extension
                 UID arcUID = new UID();
                 arcUID.Value = "esriEditor.Editor";
@@ -110,6 +116,9 @@ namespace E911_Tools
             {
                 // show the cursor as busy
                 System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
+
+                // get the counties feature class to use as a buffer for selecting road segments
+                clsE911Globals.arcFeatClass_CountiesSGID = featureWorkspaceSGID.OpenFeatureClass("SGID10.BOUNDARIES.Counties");
 
                 // check what dispatch center we're working on
                 strDispatchSchema = "";
@@ -236,7 +245,7 @@ namespace E911_Tools
                 arcDataSetETL2.Rename(strDispatchEtlName);
 
 
-                // load the custom segments and the mile marker segments to the blank streets etl feature class
+                //load the custom segments and the mile marker segments to the blank streets etl feature class
                 loadCustomSegmentsFromE911(arcFeatClass_CustomMMSegs, arcDataSetETL2);
                 loadCustomSegmentsFromE911(arcFeatClass_CustomSegs, arcDataSetETL2);
                 loadCustomSegmentsFromE911(arcFeatClass_CustomFwySegs, arcDataSetETL2);
@@ -305,7 +314,7 @@ namespace E911_Tools
                 pBar.Visible = true;
                 pBar.Minimum = 1;
                 pBar.Value = 1;
-                pBar.Step = 10;
+                pBar.Step = 1;
 
 
                 ////get access to the newly-created feature class with psap's schema
@@ -652,6 +661,8 @@ namespace E911_Tools
             try
             {
                 string strCountyList = "";
+                string strCountyPolyWhereClause = "";
+
 
                 // get list of counties for this psap
                 switch (strPSAPName)
@@ -659,20 +670,91 @@ namespace E911_Tools
                     case "StGeorge":
                         strCountyList = "COFIPS = 49053 AND CARTOCODE <> 99 and streettype not in ('FWY','RAMP')";
                         //strCountyList = "COFIPS = '49053' AND STREETNAME IS NOT NULL AND (( L_F_ADD IS NOT NULL AND L_T_ADD IS NOT NULL AND R_F_ADD IS NOT NULL AND R_T_ADD IS NOT NULL) AND (L_F_ADD <> 0 AND L_T_ADD <> 0 AND R_F_ADD <> 0 AND R_T_ADD <> 0))";
+                        strCountyPolyWhereClause = "FIPS_STR = 49053";
+                        //strCountyPolyWhereClause = "FIPS_STR in (49053, 49021)"; // testing to see if more than one poly can be buffered via union
                         break;
                     case "TOC":
                         strCountyList = "COFIPS in (,,,)";
                         break;
                 }
 
-                IQueryFilter arcQueryFilter = new QueryFilter();
-                arcQueryFilter.WhereClause = strCountyList;
 
-                // get the feature cursor
-                IFeatureCursor arcFeatCur = arcFC.Search(arcQueryFilter, false);
+                // select the county/counties based on the selected dispatch center
+                IQueryFilter arcQF_CountyPolys = new QueryFilter();
+                arcQF_CountyPolys.WhereClause = strCountyPolyWhereClause;
+                IFeatureCursor arcFeatCur_CountyPolys = clsE911Globals.arcFeatClass_CountiesSGID.Search(arcQF_CountyPolys, false);
+
+                // actually get them all in a geometry bag so we can buffer the geometry bag/collection
+                //clsE911Globals.arcFeature_CountyPoly = arcFeatCur_CountyPolys.NextFeature();
+
+
+                IGeometryCollection pGeoColl = new GeometryBag() as IGeometryCollection;
+                //object obj = Type.Missing;
+
+                // loop through all the polygons in the cursor and add them to the geometry collection
+                while ((clsE911Globals.arcFeature_CountyPoly = arcFeatCur_CountyPolys.NextFeature()) != null)
+                {
+                    IPolygon arcPolygon = (IPolygon)clsE911Globals.arcFeature_CountyPoly.Shape;
+                    // add the polygon to the collection
+                    pGeoColl.AddGeometry(arcPolygon);
+                    //pGeoColl.AddGeometry(arcPolygon, ref obj, ref obj);
+                }
+
+                //set the geometry bag equal to the geometry collection
+                IGeometryBag pGeoBag = pGeoColl as IGeometryBag;
+
+                // set the bag's spatial reference
+                //ISpatialReference arcSpatialReference;
+                IGeoDataset arcGeoDataset = (IGeoDataset)clsE911Globals.arcFeatClass_CountiesSGID;
+                pGeoBag.SpatialReference = arcGeoDataset.SpatialReference;
+
+
+                // buffer the geometry bag a user-defined distance
+                //IGeometry arcGeomFromGeoBag = (IGeometry)pGeoBag;
+                //arcGeomFromGeoBag.SpatialReference = arcGeoDataset.SpatialReference;
+
+                ////////clsE911Globals.arcFeature_CountyPoly = arcFeatCur_CountyPolys.NextFeature();
+                ////////IPolygon arcPoly = (IPolygon)clsE911Globals.arcFeature_CountyPoly.Shape;
+
+                IPolygon arcPoly = null;
+                
+                if (pGeoColl.GeometryCount == 1) 
+                {
+                    arcPoly = (IPolygon)pGeoColl.Geometry[0];               
+                }
+                else if (pGeoColl.GeometryCount > 1)
+                {
+                    ITopologicalOperator arcTopoOpUnion = new PolygonClass();
+                    arcTopoOpUnion.ConstructUnion(pGeoBag as IEnumGeometry);
+                    // (ITopologicalOperator)pGeoBag;
+                    //arcPoly = arcTopoOp.Union(pGeoColl.Geometry[0]);
+                    arcPoly = (IPolygon)arcTopoOpUnion;
+
+                }
+                else
+                {
+                    MessageBox.Show("Counld not find the county polygon boundary to buffer.", "Must have polygon county boundary", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
+                }
+
+
+                // run the buffer on the county/counties
+                ITopologicalOperator arcTopoOp2 = (ITopologicalOperator)arcPoly;
+                IPolygon arcPolyCountyBuffer = arcTopoOp2.Buffer(10) as IPolygon;
+
+
+                // create a spatial filter to get the utrans segments with a query filter to exclude ramps, freeways, and cartocode 99
+                ISpatialFilter spatialFilter = new SpatialFilterClass();
+                spatialFilter.Geometry = arcPolyCountyBuffer;
+                spatialFilter.GeometryField = arcFC.ShapeFieldName;
+                spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+                spatialFilter.WhereClause = strCountyList;
+
+                // get a cursor of utrans road segments that intersect the polygon buffer boundary
+                IFeatureCursor arcFeatCur = arcFC.Search(spatialFilter, false);
 
                 // get feature count
-                int intFeatureCount = arcFC.FeatureCount(arcQueryFilter);
+                int intFeatureCount = arcFC.FeatureCount(spatialFilter);
 
                 return Tuple.Create(arcFeatCur, intFeatureCount);
             }

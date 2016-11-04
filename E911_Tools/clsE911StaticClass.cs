@@ -30,7 +30,25 @@ namespace E911_Tools
         }
         #endregion
 
+        //connect to sde - method (this method has the same name so we can use method overloading)
+        #region "Connect to SDE"
+        public static ESRI.ArcGIS.Geodatabase.IWorkspace ConnectToTransactionalVersion(String server, String instance, String database, String authenication, String version, String username, String pass)
+        {
+            IPropertySet propertySet = new PropertySetClass();
+            propertySet.SetProperty("SERVER", server);
+            //propertySet.SetProperty("DBCLIENT", dbclient);
+            propertySet.SetProperty("INSTANCE", instance);
+            propertySet.SetProperty("DATABASE", database);
+            propertySet.SetProperty("AUTHENTICATION_MODE", authenication);
+            propertySet.SetProperty("VERSION", version);
+            propertySet.SetProperty("USER", username);
+            propertySet.SetProperty("PASSWORD", pass);
 
+            Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.SdeWorkspaceFactory");
+            IWorkspaceFactory workspaceFactory = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+            return workspaceFactory.Open(propertySet, 0);
+        }
+        #endregion
 
     }
 }
