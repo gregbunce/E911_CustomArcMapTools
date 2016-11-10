@@ -2,18 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using ESRI.ArcGIS.esriSystem;
+using ESRI.ArcGIS.Framework;
 using ESRI.ArcGIS.ADF.CATIDs;
-using ESRI.ArcGIS.ADF.BaseClasses;
 
 namespace E911_Tools
 {
-    /// <summary>
-    /// Summary description for tlbrE911.
-    /// </summary>
-    [Guid("beb47a34-126d-4da7-89c5-b4e1f8554213")]
+    [Guid("f4751db8-a990-4b90-b818-8963cf5e2179")]
     [ClassInterface(ClassInterfaceType.None)]
-    [ProgId("E911_Tools.tlbrE911")]
-    public sealed class tlbrE911 : BaseToolbar
+    [ProgId("E911_Tools.clsAppExtensionE911Tools")]
+    public class clsAppExtensionE911Tools : IExtension
     {
         #region COM Registration Function(s)
         [ComRegisterFunction()]
@@ -48,7 +46,8 @@ namespace E911_Tools
         private static void ArcGISCategoryRegistration(Type registerType)
         {
             string regKey = string.Format("HKEY_CLASSES_ROOT\\CLSID\\{{{0}}}", registerType.GUID);
-            MxCommandBars.Register(regKey);
+            MxExtension.Register(regKey);
+
         }
         /// <summary>
         /// Required method for ArcGIS Component Category unregistration -
@@ -57,40 +56,45 @@ namespace E911_Tools
         private static void ArcGISCategoryUnregistration(Type registerType)
         {
             string regKey = string.Format("HKEY_CLASSES_ROOT\\CLSID\\{{{0}}}", registerType.GUID);
-            MxCommandBars.Unregister(regKey);
+            MxExtension.Unregister(regKey);
+
         }
 
         #endregion
         #endregion
+        //private IApplication m_application;
 
-        public tlbrE911()
-        {
-            //
-            // TODO: Define your toolbar here by adding items
-            //
-            //AddItem("esriArcMapUI.ZoomInTool");
-            //BeginGroup(); //Separator
-            //AddItem("{FBF8C3FB-0480-11D2-8D21-080009EE4E51}", 1); //undo command
-            //AddItem(new Guid("FBF8C3FB-0480-11D2-8D21-080009EE4E51"), 2); //redo command
-            AddItem("{b2410654-129b-45c8-9be2-50c9fabba090}"); // etl roads data from utrans
+        #region IExtension Members
 
-        }
-
-        public override string Caption
+        /// <summary>
+        /// Name of extension. Do not exceed 31 characters
+        /// </summary>
+        public string Name
         {
             get
             {
-                //TODO: Replace bar caption
-                return "AGRC E911 Toolbar";
+                //TODO: Modify string to uniquely identify extension
+                return "clsAppExtensionE911Tools";
             }
         }
-        public override string Name
+
+        public void Shutdown()
         {
-            get
-            {
-                //TODO: Replace bar ID
-                return "tlbrE911";
-            }
+            //TODO: Clean up resources
+
+            clsE911Globals.arcApplication = null;
         }
+
+        public void Startup(ref object initializationData)
+        {
+            //get the application
+            clsE911Globals.arcApplication = initializationData as IApplication;
+            if (clsE911Globals.arcApplication == null)
+                return;
+
+            //TODO: Add code to initialize the extension
+        }
+
+        #endregion
     }
 }

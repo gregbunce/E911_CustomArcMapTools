@@ -738,11 +738,15 @@ namespace E911_Tools
                 }
 
 
-                // run the buffer on the county/counties
-                int intTxtBoxBuffer = Convert.ToInt16(txtBuffer.Text);
+                // run the buffer on the county/counties (convert miles to meters for code)  meters = miles/0.00062137
+                int intTxtBoxBufferMiles = Convert.ToInt16(txtBuffer.Text);
+                double dblBufferMeters = intTxtBoxBufferMiles / 0.00062137;
+
+                //MessageBox.Show("Meters: " + intTxtBoxBufferMiles.ToString() + ", Miles: " + dblBufferMeters.ToString());
+                //return null; 
 
                 ITopologicalOperator arcTopoOp2 = (ITopologicalOperator)arcPoly;
-                IPolygon arcPolyCountyBuffer = arcTopoOp2.Buffer(intTxtBoxBuffer) as IPolygon;
+                IPolygon arcPolyCountyBuffer = arcTopoOp2.Buffer(dblBufferMeters) as IPolygon;
 
 
                 // create a spatial filter to get the utrans segments with a query filter to exclude ramps, freeways, and cartocode 99
@@ -1230,6 +1234,9 @@ namespace E911_Tools
                         //}
                     }
                 }
+
+                MessageBox.Show("Done spliting reprojecting feature classes!", "Done Reprojecting!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             }
             catch (Exception ex)
             {

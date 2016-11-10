@@ -33,7 +33,6 @@ namespace E911_Tools
             set;
         }
 
-
         public static IActiveView pActiveView
         {
             get;

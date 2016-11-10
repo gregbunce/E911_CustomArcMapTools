@@ -33,6 +33,8 @@
             this.pBar = new System.Windows.Forms.ProgressBar();
             this.lblProgressBar = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txtBuffer = new System.Windows.Forms.TextBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.btnReproject = new System.Windows.Forms.Button();
@@ -51,8 +53,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnSelectIntersectSegs = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.txtBuffer = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox7.SuspendLayout();
@@ -124,6 +124,27 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "ETL Roads from UTRANS and Custom Segments to FGDB";
+            // 
+            // txtBuffer
+            // 
+            this.txtBuffer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBuffer.Location = new System.Drawing.Point(248, 26);
+            this.txtBuffer.Name = "txtBuffer";
+            this.txtBuffer.Size = new System.Drawing.Size(46, 20);
+            this.txtBuffer.TabIndex = 7;
+            this.txtBuffer.Text = "0";
+            this.txtBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtBuffer.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtBuffer_KeyPress);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label9.Location = new System.Drawing.Point(43, 29);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(192, 13);
+            this.label9.TabIndex = 6;
+            this.label9.Text = "Apply buffer to UTRANS roads in miles:";
             // 
             // groupBox2
             // 
@@ -331,27 +352,6 @@
             this.groupBox3.TabIndex = 8;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Select Dispatch Center";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(43, 29);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(200, 13);
-            this.label9.TabIndex = 6;
-            this.label9.Text = "Apply buffer to UTRANS roads in meters:";
-            // 
-            // txtBuffer
-            // 
-            this.txtBuffer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBuffer.Location = new System.Drawing.Point(248, 26);
-            this.txtBuffer.Name = "txtBuffer";
-            this.txtBuffer.Size = new System.Drawing.Size(46, 20);
-            this.txtBuffer.TabIndex = 7;
-            this.txtBuffer.Text = "0";
-            this.txtBuffer.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtBuffer.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtBuffer_KeyPress);
             // 
             // frmEtlRoads
             // 
