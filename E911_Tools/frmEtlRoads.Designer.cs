@@ -206,7 +206,7 @@
             this.groupBox6.Size = new System.Drawing.Size(454, 109);
             this.groupBox6.TabIndex = 3;
             this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "Split the Selected Segments that Cross Law Zone Boundaries";
+            this.groupBox6.Text = "Split the Selected Segments that Cross Polygon Boundaries";
             // 
             // label8
             // 
@@ -246,9 +246,9 @@
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(20, 54);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(276, 13);
+            this.label5.Size = new System.Drawing.Size(373, 13);
             this.label5.TabIndex = 2;
-            this.label5.Text = "Select law zone to base split on (based on PSAP above):";
+            this.label5.Text = "Select polygon boundary to base split on (based on selected dispatch above):";
             // 
             // cboSelectLawZone
             // 
@@ -289,7 +289,7 @@
             this.groupBox5.Size = new System.Drawing.Size(454, 107);
             this.groupBox5.TabIndex = 2;
             this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Select the Segments that Cross Law Zone Boundaries";
+            this.groupBox5.Text = "Select the Segments that Cross Polygon Boundaries";
             // 
             // label7
             // 
@@ -297,9 +297,9 @@
             this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label7.Location = new System.Drawing.Point(12, 44);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(244, 13);
+            this.label7.Size = new System.Drawing.Size(237, 13);
             this.label7.TabIndex = 4;
-            this.label7.Text = "2: Target = Roads;   Source = LawZone Boundary";
+            this.label7.Text = "2: Target = Roads;   Source = Polygon Boundary";
             // 
             // label3
             // 

@@ -137,12 +137,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="btnEtlAddresses.cs" />
     <Compile Include="btnEtlRoads.cs" />
     <Compile Include="clsAppExtensionE911Tools.cs" />
     <Compile Include="clsE911Globals.cs" />
     <Compile Include="clsE911StaticClass.cs" />
     <Compile Include="clsModelessDialog.cs" />
     <Compile Include="clsSplitLine.cs" />
+    <Compile Include="frmEtlAddresses.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmEtlAddresses.Designer.cs">
+      <DependentUpon>frmEtlAddresses.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmEtlRoads.cs">
       <SubType>Form</SubType>
     </Compile>

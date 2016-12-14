@@ -43,6 +43,13 @@ namespace E911_Tools
         IFeatureClass arcFeatClass_EmsZone;
         IFeatureClass arcFeatClass_FireZone;
         IFeatureClass arcFeatClass_LawZone;
+        IFeatureClass arcFeatClass_Campus1;
+        IFeatureClass arcFeatClass_CampusBld1;
+        IFeatureClass arcFeatClass_CampusBld2;
+        IFeatureClass arcFeatClass_SplitStreets;
+        IFeatureClass arcFeatClass_DNR_Unique;
+        IFeatureClass arcFeatClass_DOC_Unique;
+        IFeatureClass arcFeatClass_DPS_Unique;
 
         //get access to the newly-created feature class with psap's schema
         Type factoryType = Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory");
@@ -79,10 +86,10 @@ namespace E911_Tools
                 clsE911Globals.pActiveView = clsE911Globals.pMxDocument.ActiveView;  //pActiveView = (IActiveView)pMap;
 
                 // get access to the feature workspace
-                workspaceFactoryETL = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-                arcFeatWorkspaceETL = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeE911ETL.gdb", 0);
-                workspaceFactorySchema = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
-                arcFeatWorkspaceSchema = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SchemaFGDBs\StGeorgeE911Schema.gdb", 0);
+                ////workspaceFactoryETL = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                ////arcFeatWorkspaceETL = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeE911ETL.gdb", 0);
+                ////workspaceFactorySchema = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                ////arcFeatWorkspaceSchema = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SchemaFGDBs\StGeorgeE911Schema.gdb", 0);
 
 
                 // get access to the e911 database  - connect to sde
@@ -126,6 +133,9 @@ namespace E911_Tools
                 strSourceWorkkSpace = "";
                 strTargetWorkSpace = "";
 
+                // create a list of feature classes that we will be loading into the etl feature class
+                List<IFeatureClass> listFeatureClasses = new List<IFeatureClass>();
+
                 // create dispatch variables based user selection in combobox 
                 switch (cboPSAPname.Text)
                 {
@@ -138,13 +148,52 @@ namespace E911_Tools
                         arcFeatClass_CustomMMSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomMMSegments");
                         arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomSegments");
                         arcFeatClass_CustomFwySegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CustomFwySegments");
+
+                        // add the feature classes into a list of feature classes
+                        listFeatureClasses.Add(arcFeatClass_CustomFwySegs);
+                        listFeatureClasses.Add(arcFeatClass_CustomMMSegs);
+                        listFeatureClasses.Add(arcFeatClass_CustomSegs);
+
                         //arcFeatClass_CityCd = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CITYCD");
                         //arcFeatClass_EmsZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_EMS_Zones");
                         //arcFeatClass_FireZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Fire_Zones");
                         //arcFeatClass_LawZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Law_Zones");
+                        workspaceFactoryETL = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                        arcFeatWorkspaceETL = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SaintGeorge\StGeorgeE911ETL.gdb", 0);
+                        workspaceFactorySchema = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                        arcFeatWorkspaceSchema = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SchemaFGDBs\StGeorgeE911Schema.gdb", 0);
                         break;
                     case "TOC":
-                        strDispatchSchema = "";
+                        strDispatchSchema = "TOCRoadsSchema";
+                        strDispatchEtlName = "TOC_StreetsETL";
+                        strSourceWorkkSpace = @"K:\AGRC Projects\E911_Editing\SchemaFGDBs\TocE911Schema.gdb";
+                        strTargetWorkSpace = @"K:\AGRC Projects\E911_Editing\TOC\Data\TOC_E911_ETL.gdb";
+                        // get access to utrans roads as feature class
+                        arcFeatClass_CustomFwySegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_Freeways");
+                        arcFeatClass_Campus1 = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_Campus");
+                        arcFeatClass_CampusBld1 = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.BYU_Campus_Bldgs");
+                        arcFeatClass_CampusBld2 = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.SLCC_Bldgs");
+                        arcFeatClass_SplitStreets = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Split_Streets");
+                        arcFeatClass_DNR_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DNR_Unique");
+                        arcFeatClass_DOC_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DOC_Unique");
+                        arcFeatClass_DPS_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DPS_Unique");
+                        arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Streets_Custom_Segments");
+
+                        // add the feature classes into a list of feature classes
+                        listFeatureClasses.Add(arcFeatClass_CustomFwySegs);
+                        listFeatureClasses.Add(arcFeatClass_Campus1);
+                        listFeatureClasses.Add(arcFeatClass_CampusBld1);
+                        listFeatureClasses.Add(arcFeatClass_CampusBld2);
+                        listFeatureClasses.Add(arcFeatClass_SplitStreets);
+                        listFeatureClasses.Add(arcFeatClass_DNR_Unique);
+                        listFeatureClasses.Add(arcFeatClass_DOC_Unique);
+                        listFeatureClasses.Add(arcFeatClass_DPS_Unique);
+                        listFeatureClasses.Add(arcFeatClass_CustomSegs);
+
+                        workspaceFactoryETL = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                        arcFeatWorkspaceETL = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\TOC\Data\TOC_E911_ETL.gdb", 0);
+                        workspaceFactorySchema = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
+                        arcFeatWorkspaceSchema = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\SchemaFGDBs\TocE911Schema.gdb", 0);
                         break;
                 }
 
@@ -246,12 +295,23 @@ namespace E911_Tools
 
 
                 //load the custom segments and the mile marker segments to the blank streets etl feature class
-                loadCustomSegmentsFromE911(arcFeatClass_CustomMMSegs, arcDataSetETL2);
-                loadCustomSegmentsFromE911(arcFeatClass_CustomSegs, arcDataSetETL2);
-                loadCustomSegmentsFromE911(arcFeatClass_CustomFwySegs, arcDataSetETL2);
+                foreach (var featureClass in listFeatureClasses)
+                {
+                    loadCustomSegmentsFromE911(featureClass, arcDataSetETL2);
+                }
+
+                //for (int i = 0; i < listFeatureClasses.Count; i++)
+                //{
+                //    loadCustomSegmentsFromE911(listFeatureClasses[i], arcDataSetETL2);
+                //}
+                //loadCustomSegmentsFromE911(arcFeatClass_CustomMMSegs, arcDataSetETL2);
+                //loadCustomSegmentsFromE911(arcFeatClass_CustomSegs, arcDataSetETL2);
+                //loadCustomSegmentsFromE911(arcFeatClass_CustomFwySegs, arcDataSetETL2);
                 
                 // call the method to load (insert) segments data from utrans
-                insertNewFeaturesFromUtrans();
+                //// this should not be commented out - insertNewFeaturesFromUtrans();
+
+                MessageBox.Show("The E911 Tool finished the roads ETL!  The output feature class from this process is located here: " + strTargetWorkSpace + ".", "Finished!", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             }
             catch (Exception ex)
@@ -286,7 +346,6 @@ namespace E911_Tools
                 {
                     // loop though the messages and report them
                 }
-
             }
             catch (Exception ex)
             {
