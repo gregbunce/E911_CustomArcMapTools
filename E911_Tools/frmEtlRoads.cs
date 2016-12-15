@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ESRI.ArcGIS.Geodatabase;
@@ -165,7 +166,7 @@ namespace E911_Tools
                         break;
                     case "TOC":
                         strDispatchSchema = "TOCRoadsSchema";
-                        strDispatchEtlName = "TOC_StreetsETL";
+                        strDispatchEtlName = "TOCStreetsETL";
                         strSourceWorkkSpace = @"K:\AGRC Projects\E911_Editing\SchemaFGDBs\TocE911Schema.gdb";
                         strTargetWorkSpace = @"K:\AGRC Projects\E911_Editing\TOC\Data\TOC_E911_ETL.gdb";
                         // get access to utrans roads as feature class
@@ -297,19 +298,11 @@ namespace E911_Tools
                 //load the custom segments and the mile marker segments to the blank streets etl feature class
                 foreach (var featureClass in listFeatureClasses)
                 {
-                    loadCustomSegmentsFromE911(featureClass, arcDataSetETL2);
+                    //loadCustomSegmentsFromE911(featureClass, arcDataSetETL2);
                 }
-
-                //for (int i = 0; i < listFeatureClasses.Count; i++)
-                //{
-                //    loadCustomSegmentsFromE911(listFeatureClasses[i], arcDataSetETL2);
-                //}
-                //loadCustomSegmentsFromE911(arcFeatClass_CustomMMSegs, arcDataSetETL2);
-                //loadCustomSegmentsFromE911(arcFeatClass_CustomSegs, arcDataSetETL2);
-                //loadCustomSegmentsFromE911(arcFeatClass_CustomFwySegs, arcDataSetETL2);
                 
                 // call the method to load (insert) segments data from utrans
-                //// this should not be commented out - insertNewFeaturesFromUtrans();
+                insertNewFeaturesFromUtrans();
 
                 MessageBox.Show("The E911 Tool finished the roads ETL!  The output feature class from this process is located here: " + strTargetWorkSpace + ".", "Finished!", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -461,7 +454,8 @@ namespace E911_Tools
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("R_T_ADD"), 0);
                     }
-                    
+
+                    string strCartoCode = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("CARTOCODE")).ToString().Trim();
                     arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("CARTOCODE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("CARTOCODE")).ToString().Trim());
 
                     string strPREDIR = "";
@@ -574,37 +568,294 @@ namespace E911_Tools
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("HWYNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("HWYNAME")).ToString().Trim());
                     }
 
+
+                    // check what dispatch center we are working with, and format the certain fields as needed
                     // set up the concatination for the STREET field
                     string strSTREET = "";
                     int intNumber;
                     bool blnIsNumeric = int.TryParse(strSTREETNAME, out intNumber);
-                    //string strStreetName = "";
-                    //strStreetName = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
-                    //string strSTREETTYPE = "";
-                    //strSTREETTYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
+                    
+                    switch (cboPSAPname.Text.ToString())
+                    {
+                        #region StGeorge specific dispatch field formatting
+                        case "StGeorge":
 
-                    // check if streetname is numeric and if it has a streetype of cir if so format it with the circle after the sufdir
-                    if (strSTREETTYPE.ToUpper() == "CIR" & blnIsNumeric)
-                    {
-                        strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
+                            //string strStreetName = "";
+                            //strStreetName = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+                            //string strSTREETTYPE = "";
+                            //strSTREETTYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
+
+                            // check if streetname is numeric and if it has a streetype of cir if so format it with the circle after the sufdir
+                            if (strSTREETTYPE.ToUpper() == "CIR" & blnIsNumeric)
+                            {
+                                strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
+                                    arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
+                                    arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
+                            }
+                            else // the streetname does not contain a number with the streettype being "cir"
+                            {
+                                strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
+                                    arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
+                                    arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim() + " " +
+                                    arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
+                            }
+                            // replace double spaces with one
+                            strSTREET = strSTREET.Replace("  ", " ");
+                            // check for the word "HIGHWAY" and replace it with "SR-"
+                            strSTREET = strSTREET.Replace("HIGHWAY ", "SR-");
+                            strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
+                            // trim the whole street concatination
+                            strSTREET = strSTREET.Trim();
+
+                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
+
+
+                            // populate salias1 and salias2 fields
+                            //string strAlias1 = "";
+                            //strAlias1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                            if (strALIAS1 != "")
+                            {
+                                string strSALIAS1 = "";
+                                strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim() + " " +
+                                    arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim();
+                                strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                // check for the word "HIGHWAY" and replace it with "SR-"
+                                strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "SR-");
+                                strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
+                                strSALIAS1 = strSALIAS1.Trim();
+                                arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                            }
+                            //string strAlias2 = "";
+                            //strAlias2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                            if (strALIAS2 != "")
+                            {
+                                string strSALIAS2 = "";
+                                strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim() + " " +
+                                     arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim();
+                                strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                // check for the word "HIGHWAY" and replace it with "SR-"
+                                strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "SR-");
+                                strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
+                                strSALIAS2 = strSALIAS2.Trim();
+                                arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                            }
+
+
+                            break;
+                        #endregion
+                        #region TOC specific dispatch field formatting
+                        case "TOC":
+                            // cartocode is 1 or 7 (interstates or ramps)
+                            if (strCartoCode == "1" | strCartoCode == "7")
+                            {
+                                // check what county the segment is in
+                                if (strCOFIPS == "49049") // UTAH COUNTY //
+                                {
+                                    if (strCartoCode == "1")
+                                    {
+                                        // they use this format "S I15 NB"
+                                        strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+
+                                        // replace values
+                                        strSTREET = strSTREET.Replace("  ", " ");
+                                        strSTREET = strSTREET.Replace("-", "");
+                                        // trim the whole street concatination
+                                        strSTREET = strSTREET.Trim();
+
+
+                                        // populate salias1 and salias2 fields
+                                        if (strALIAS1 != "")
+                                        {
+                                            string strSALIAS1 = "";
+                                            strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                                            strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                            // check for the word "HIGHWAY" and replace it with "SR-"
+                                            strSALIAS1 = strSALIAS1.Replace("-", "");
+                                            strSALIAS1 = strSALIAS1.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                                        }
+                                        if (strALIAS2 != "")
+                                        {
+                                            string strSALIAS2 = "";
+                                            strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                                            strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                            // check for the word "HIGHWAY" and replace it with "SR-"
+                                            strSALIAS2 = strSALIAS2.Replace("-", "");
+                                            strSALIAS2 = strSALIAS2.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                                        }
+                                    }
+                                    else if (strCartoCode == "7")
+                                    {
+                                        // they use the " I15 SB 4800 S OFR, I89 WB 5600 W ONR"
+                                        strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+
+                                        // replace values
+                                        strSTREET = strSTREET.Replace("  ", " ");
+                                        strSTREET = strSTREET.Replace("-", "");
+                                        strSTREET = strSTREET.Replace("ON", "ONR");
+                                        strSTREET = strSTREET.Replace("OFF", "OFR");
+
+                                        // check if string contains the letter "X" next to a number
+                                        if (Regex.IsMatch(strSTREET, @" X\d"))
+                                        {
+                                            strSTREET = strSTREET.Replace(" X", " ");
+                                        }
+
+                                        // trim the whole street concatination
+                                        strSTREET = strSTREET.Trim();
+
+                                        // populate salias1 and salias2 fields
+                                        if (strALIAS1 != "")
+                                        {
+                                            string strSALIAS1 = "";
+                                            strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                                            strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                            // check for the word "HIGHWAY" and replace it with "SR-"
+                                            strSALIAS1 = strSALIAS1.Replace("-", "");
+                                            strSALIAS1 = strSALIAS1.Replace("ON", "ONR");
+                                            strSALIAS1 = strSALIAS1.Replace("OFF", "OFR");
+
+                                            // check if string contains the letter "X" next to a number
+                                            if (Regex.IsMatch(strSALIAS1, @" X\d"))
+                                            {
+                                                strSALIAS1 = strSALIAS1.Replace(" X", " ");
+                                            }
+
+                                            strSALIAS1 = strSALIAS1.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                                        }
+                                        if (strALIAS2 != "")
+                                        {
+                                            string strSALIAS2 = "";
+                                            strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                                            strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                            // check for the word "HIGHWAY" and replace it with "SR-"
+                                            strSALIAS2 = strSALIAS2.Replace("-", "");
+                                            strSALIAS2 = strSALIAS2.Replace("ON", "ONR");
+                                            strSALIAS2 = strSALIAS2.Replace("OFF", "OFR");
+
+                                            // check if string contains the letter "X" next to a number
+                                            if (Regex.IsMatch(strSALIAS2, @" X\d"))
+                                            {
+                                                strSALIAS2 = strSALIAS2.Replace(" X", " ");
+                                            }
+
+                                            strSALIAS2 = strSALIAS2.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                                        }
+                                    }
+
+
+                                }
+                                else if (strCOFIPS == "49035") // SALT LAKE COUNTY //
+                                {
+                                    if (strCartoCode == "1")
+                                    {
+                                         // they use this format "S I15 NB"
+                                        strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
+                                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+
+                                            // replace values
+                                            strSTREET = strSTREET.Replace("  ", " ");
+                                            strSTREET = strSTREET.Replace("-", "");
+                                            // trim the whole street concatination
+                                            strSTREET = strSTREET.Trim();
+
+
+                                            // populate salias1 and salias2 fields
+                                            if (strALIAS1 != "")
+                                            {
+                                                string strSALIAS1 = "";
+                                                strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                                                strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                                // check for the word "HIGHWAY" and replace it with "SR-"
+                                                strSALIAS1 = strSALIAS1.Replace("-", "");
+                                                strSALIAS1 = strSALIAS1.Trim();
+                                                arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                                            }
+                                            if (strALIAS2 != "")
+                                            {
+                                                string strSALIAS2 = "";
+                                                strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                                                strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                                // check for the word "HIGHWAY" and replace it with "SR-"
+                                                strSALIAS2 = strSALIAS2.Replace("-", "");
+                                                strSALIAS2 = strSALIAS2.Trim();
+                                                arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                                            }
+
+                                    }
+                                    else if (strCartoCode == "7")
+                                    {
+                                        // they use the " I15 SB 4800 S OFR, I89 WB 5600 W ONR"
+                                        strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
+
+                                        // replace values
+                                        strSTREET = strSTREET.Replace("  ", " ");
+                                        strSTREET = strSTREET.Replace("-", "");
+                                        strSTREET = strSTREET.Replace("ON", "ONR");
+                                        strSTREET = strSTREET.Replace("OFF", "OFR");
+
+                                        // check if string contains the letter "X" next to a number
+                                        if (Regex.IsMatch(strSTREET, @" X\d"))
+                                        {
+                                            strSTREET = strSTREET.Replace(" X", " ");
+                                        }
+
+                                        // trim the whole street concatination
+                                        strSTREET = strSTREET.Trim();
+
+
+                                        // populate salias1 and salias2 fields
+                                        if (strALIAS1 != "")
+                                        {
+                                            string strSALIAS1 = "";
+                                            strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                                            strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                            // check for the word "HIGHWAY" and replace it with "SR-"
+                                            strSALIAS1 = strSALIAS1.Replace("-", "");
+                                            strSALIAS1 = strSALIAS1.Replace("ON", "ONR");
+                                            strSALIAS1 = strSALIAS1.Replace("OFF", "OFR");
+
+                                            // check if string contains the letter "X" next to a number
+                                            if (Regex.IsMatch(strSALIAS1, @" X\d"))
+                                            {
+                                                strSALIAS1 = strSALIAS1.Replace(" X", " ");
+                                            }
+
+                                            strSALIAS1 = strSALIAS1.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                                        }
+                                        if (strALIAS2 != "")
+                                        {
+                                            string strSALIAS2 = "";
+                                            strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                                            strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                            // check for the word "HIGHWAY" and replace it with "SR-"
+                                            strSALIAS2 = strSALIAS2.Replace("-", "");
+                                            strSALIAS2 = strSALIAS2.Replace("ON", "ONR");
+                                            strSALIAS2 = strSALIAS2.Replace("OFF", "OFR");
+
+                                            // check if string contains the letter "X" next to a number
+                                            if (Regex.IsMatch(strSALIAS2, @" X\d"))
+                                            {
+                                                strSALIAS2 = strSALIAS2.Replace(" X", " ");
+                                            }
+
+                                            strSALIAS2 = strSALIAS2.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                                        }
+                                    }
+
+                                }
+                            }
+                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
+
+
+                            break;
+                        #endregion
                     }
-                    else // the streetname does not contain a number with the streettype being "cir"
-                    {
-                        strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
-                    }
-                    // replace double spaces with one
-                    strSTREET = strSTREET.Replace("  ", " ");
-                    // check for the word "HIGHWAY" and replace it with "SR-"
-                    strSTREET = strSTREET.Replace("HIGHWAY ", "SR-");
-                    strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
-                    // trim the whole street concatination
-                    strSTREET = strSTREET.Trim();
-                    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
 
 
                     // populate the location field and salias4 - the value in this field is placed after a colon on the calltakers screen to show them the numberic location of the call
@@ -621,35 +872,35 @@ namespace E911_Tools
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS4"), strLOCATION);                             
                     }
 
-                    // populate salias1 and salias2 fields
-                    //string strAlias1 = "";
-                    //strAlias1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
-                    if (strALIAS1 != "")
-                    {
-                        string strSALIAS1 = "";
-                        strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim();
-                        strSALIAS1 = strSALIAS1.Replace("  ", " ");
-                        // check for the word "HIGHWAY" and replace it with "SR-"
-                        strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "SR-");
-                        strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
-                        strSALIAS1 = strSALIAS1.Trim();
-                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
-                    }
-                    //string strAlias2 = "";
-                    //strAlias2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
-                    if (strALIAS2 != "")
-                    {
-                        string strSALIAS2 = "";
-                        strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim() + " " +
-                             arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim();
-                        strSALIAS2 = strSALIAS2.Replace("  ", " ");
-                        // check for the word "HIGHWAY" and replace it with "SR-"
-                        strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "SR-");
-                        strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
-                        strSALIAS2 = strSALIAS2.Trim();
-                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
-                    }
+                    ////// populate salias1 and salias2 fields
+                    //////string strAlias1 = "";
+                    //////strAlias1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
+                    ////if (strALIAS1 != "")
+                    ////{
+                    ////    string strSALIAS1 = "";
+                    ////    strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim() + " " +
+                    ////        arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim();
+                    ////    strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                    ////    // check for the word "HIGHWAY" and replace it with "SR-"
+                    ////    strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "SR-");
+                    ////    strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
+                    ////    strSALIAS1 = strSALIAS1.Trim();
+                    ////    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                    ////}
+                    //////string strAlias2 = "";
+                    //////strAlias2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
+                    ////if (strALIAS2 != "")
+                    ////{
+                    ////    string strSALIAS2 = "";
+                    ////    strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim() + " " +
+                    ////         arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim();
+                    ////    strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                    ////    // check for the word "HIGHWAY" and replace it with "SR-"
+                    ////    strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "SR-");
+                    ////    strSTREET = strSTREET.Replace("OLD SR-", "OLD HWY ");
+                    ////    strSALIAS2 = strSALIAS2.Trim();
+                    ////    arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                    ////}
 
                     // populate the salias3 field of street name or the alias1 or alias2 fields contain HIGHWAY... then replace with HWY
                     bool blnStreetNameContainsHwy = strSTREETNAME.Contains("HIGHWAY");
@@ -695,7 +946,12 @@ namespace E911_Tools
                     }
 
                     // store the new row/feature
-                    arcFeatureNewSchemaFeat.Store();
+                    // check if geometry is empty before store
+                    if (!(arcFeatureUtrans.Extent.Envelope.IsEmpty))
+	                {
+                        arcFeatureNewSchemaFeat.Store();
+	                }
+                    
 
                     // preform the increment of the progress bar
                     pBar.PerformStep();
@@ -733,10 +989,11 @@ namespace E911_Tools
                         //strCountyPolyWhereClause = "FIPS_STR in (49053, 49021)"; // testing to see if more than one poly can be buffered via union
                         break;
                     case "TOC":
-                        strCountyList = "COFIPS in (,,,)";
+                        //strCountyList = "CARTOCODE <> 99 and streettype not in ('FWY','RAMP')";
+                        strCountyList = "CARTOCODE in (1,7) and streettype in ('FWY','RAMP')";
+                        strCountyPolyWhereClause = "FIPS_STR in ('49049', '49035')";
                         break;
                 }
-
 
                 // select the county/counties based on the selected dispatch center
                 IQueryFilter arcQF_CountyPolys = new QueryFilter();
