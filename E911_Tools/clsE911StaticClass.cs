@@ -140,7 +140,7 @@ namespace E911_Tools
                 //"Error Location:" + Environment.NewLine + ex.StackTrace,
                 //"UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 
-                return "error";
+                return "error: reformatting";
             }
         
         }
