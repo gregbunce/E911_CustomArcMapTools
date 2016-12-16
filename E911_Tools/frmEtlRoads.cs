@@ -690,59 +690,70 @@ namespace E911_Tools
                                         // they use the " I15 SB 4800 S OFR, I89 WB 5600 W ONR"
                                         strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
 
-                                        // replace values
-                                        strSTREET = strSTREET.Replace("  ", " ");
-                                        strSTREET = strSTREET.Replace("-", "");
-                                        strSTREET = strSTREET.Replace("ON", "ONR");
-                                        strSTREET = strSTREET.Replace("OFF", "OFR");
+                                        // reformat the alias2 field to rearrange the order of exit info for TOC format
+                                        strSTREET = clsE911StaticClass.ReformatStringForExitFeatures(strSTREET);
 
-                                        // check if string contains the letter "X" next to a number
-                                        if (Regex.IsMatch(strSTREET, @" X\d"))
-                                        {
-                                            strSTREET = strSTREET.Replace(" X", " ");
-                                        }
+                                                                        ////// replace values
+                                                                        ////strSTREET = strSTREET.Replace("  ", " ");
+                                                                        ////strSTREET = strSTREET.Replace("-", "");
+                                                                        ////strSTREET = strSTREET.Replace("ON", "ONR");
+                                                                        ////strSTREET = strSTREET.Replace("OFF", "OFR");
 
-                                        // trim the whole street concatination
-                                        strSTREET = strSTREET.Trim();
+                                                                        ////// check if string contains the letter "X" next to a number
+                                                                        ////if (Regex.IsMatch(strSTREET, @" X\d"))
+                                                                        ////{
+                                                                        ////    strSTREET = strSTREET.Replace(" X", " ");
+                                                                        ////}
+
+                                                                        ////// trim the whole street concatination
+                                                                        ////strSTREET = strSTREET.Trim();
 
                                         // populate salias1 and salias2 fields
                                         if (strALIAS1 != "")
                                         {
                                             string strSALIAS1 = "";
                                             strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
-                                            strSALIAS1 = strSALIAS1.Replace("  ", " ");
-                                            // check for the word "HIGHWAY" and replace it with "SR-"
-                                            strSALIAS1 = strSALIAS1.Replace("-", "");
-                                            strSALIAS1 = strSALIAS1.Replace("ON", "ONR");
-                                            strSALIAS1 = strSALIAS1.Replace("OFF", "OFR");
 
-                                            // check if string contains the letter "X" next to a number
-                                            if (Regex.IsMatch(strSALIAS1, @" X\d"))
-                                            {
-                                                strSALIAS1 = strSALIAS1.Replace(" X", " ");
-                                            }
+                                            // reformat the alias2 field to rearrange the order of exit info for TOC format
+                                            string strSALIAS1_reformatted = clsE911StaticClass.ReformatStringForExitFeatures(strSALIAS1);
 
-                                            strSALIAS1 = strSALIAS1.Trim();
-                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                                                                        ////strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                                                        ////// check for the word "HIGHWAY" and replace it with "SR-"
+                                                                        ////strSALIAS1 = strSALIAS1.Replace("-", "");
+                                                                        ////strSALIAS1 = strSALIAS1.Replace("ON", "ONR");
+                                                                        ////strSALIAS1 = strSALIAS1.Replace("OFF", "OFR");
+
+                                                                        ////// check if string contains the letter "X" next to a number
+                                                                        ////if (Regex.IsMatch(strSALIAS1, @" X\d"))
+                                                                        ////{
+                                                                        ////    strSALIAS1 = strSALIAS1.Replace(" X", " ");
+                                                                        ////}
+
+                                                                        ////strSALIAS1 = strSALIAS1.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1_reformatted);
                                         }
                                         if (strALIAS2 != "")
                                         {
                                             string strSALIAS2 = "";
                                             strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
-                                            strSALIAS2 = strSALIAS2.Replace("  ", " ");
-                                            // check for the word "HIGHWAY" and replace it with "SR-"
-                                            strSALIAS2 = strSALIAS2.Replace("-", "");
-                                            strSALIAS2 = strSALIAS2.Replace("ON", "ONR");
-                                            strSALIAS2 = strSALIAS2.Replace("OFF", "OFR");
 
-                                            // check if string contains the letter "X" next to a number
-                                            if (Regex.IsMatch(strSALIAS2, @" X\d"))
-                                            {
-                                                strSALIAS2 = strSALIAS2.Replace(" X", " ");
-                                            }
+                                            // reformat the alias2 field to rearrange the order of exit info for TOC format
+                                            string strSALIAS2_reformatted = clsE911StaticClass.ReformatStringForExitFeatures(strSALIAS2);
+                                            
+                                                                        ////strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                                                        ////// check for the word "HIGHWAY" and replace it with "SR-"
+                                                                        ////strSALIAS2 = strSALIAS2.Replace("-", "");
+                                                                        ////strSALIAS2 = strSALIAS2.Replace("ON", "ONR");
+                                                                        ////strSALIAS2 = strSALIAS2.Replace("OFF", "OFR");
 
-                                            strSALIAS2 = strSALIAS2.Trim();
-                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                                                                        ////// check if string contains the letter "X" next to a number
+                                                                        ////if (Regex.IsMatch(strSALIAS2, @" X\d"))
+                                                                        ////{
+                                                                        ////    strSALIAS2 = strSALIAS2.Replace(" X", " ");
+                                                                        ////}
+
+                                                                        ////strSALIAS2 = strSALIAS2.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2_reformatted);
                                         }
                                     }
 
@@ -791,20 +802,23 @@ namespace E911_Tools
                                         // they use the " I15 SB 4800 S OFR, I89 WB 5600 W ONR"
                                         strSTREET = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETNAME")).ToString().Trim();
 
-                                        // replace values
-                                        strSTREET = strSTREET.Replace("  ", " ");
-                                        strSTREET = strSTREET.Replace("-", "");
-                                        strSTREET = strSTREET.Replace("ON", "ONR");
-                                        strSTREET = strSTREET.Replace("OFF", "OFR");
+                                        // reformat the alias2 field to rearrange the order of exit info for TOC format
+                                        strSTREET = clsE911StaticClass.ReformatStringForExitFeatures(strSTREET);
 
-                                        // check if string contains the letter "X" next to a number
-                                        if (Regex.IsMatch(strSTREET, @" X\d"))
-                                        {
-                                            strSTREET = strSTREET.Replace(" X", " ");
-                                        }
+                                                                            ////// replace values
+                                                                            ////strSTREET = strSTREET.Replace("  ", " ");
+                                                                            ////strSTREET = strSTREET.Replace("-", "");
+                                                                            ////strSTREET = strSTREET.Replace("ON", "ONR");
+                                                                            ////strSTREET = strSTREET.Replace("OFF", "OFR");
 
-                                        // trim the whole street concatination
-                                        strSTREET = strSTREET.Trim();
+                                                                            ////// check if string contains the letter "X" next to a number
+                                                                            ////if (Regex.IsMatch(strSTREET, @" X\d"))
+                                                                            ////{
+                                                                            ////    strSTREET = strSTREET.Replace(" X", " ");
+                                                                            ////}
+
+                                                                            ////// trim the whole street concatination
+                                                                            ////strSTREET = strSTREET.Trim();
 
 
                                         // populate salias1 and salias2 fields
@@ -812,46 +826,107 @@ namespace E911_Tools
                                         {
                                             string strSALIAS1 = "";
                                             strSALIAS1 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
-                                            strSALIAS1 = strSALIAS1.Replace("  ", " ");
-                                            // check for the word "HIGHWAY" and replace it with "SR-"
-                                            strSALIAS1 = strSALIAS1.Replace("-", "");
-                                            strSALIAS1 = strSALIAS1.Replace("ON", "ONR");
-                                            strSALIAS1 = strSALIAS1.Replace("OFF", "OFR");
 
-                                            // check if string contains the letter "X" next to a number
-                                            if (Regex.IsMatch(strSALIAS1, @" X\d"))
-                                            {
-                                                strSALIAS1 = strSALIAS1.Replace(" X", " ");
-                                            }
+                                            // reformat the alias2 field to rearrange the order of exit info for TOC format
+                                            string strSALIAS1_reformatted = clsE911StaticClass.ReformatStringForExitFeatures(strSALIAS1);
 
-                                            strSALIAS1 = strSALIAS1.Trim();
-                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1);
+                                                                            ////strSALIAS1 = strSALIAS1.Replace("  ", " ");
+                                                                            ////// check for the word "HIGHWAY" and replace it with "SR-"
+                                                                            ////strSALIAS1 = strSALIAS1.Replace("-", "");
+                                                                            ////strSALIAS1 = strSALIAS1.Replace("ON", "ONR");
+                                                                            ////strSALIAS1 = strSALIAS1.Replace("OFF", "OFR");
+
+                                                                            ////// check if string contains the letter "X" next to a number
+                                                                            ////if (Regex.IsMatch(strSALIAS1, @" X\d"))
+                                                                            ////{
+                                                                            ////    strSALIAS1 = strSALIAS1.Replace(" X", " ");
+                                                                            ////}
+
+                                                                            ////strSALIAS1 = strSALIAS1.Trim();
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS1"), strSALIAS1_reformatted);
                                         }
                                         if (strALIAS2 != "")
                                         {
                                             string strSALIAS2 = "";
                                             strSALIAS2 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim();
-                                            strSALIAS2 = strSALIAS2.Replace("  ", " ");
-                                            // check for the word "HIGHWAY" and replace it with "SR-"
-                                            strSALIAS2 = strSALIAS2.Replace("-", "");
-                                            strSALIAS2 = strSALIAS2.Replace("ON", "ONR");
-                                            strSALIAS2 = strSALIAS2.Replace("OFF", "OFR");
+                                            
+                                            // reformat the alias2 field to rearrange the order of exit info for TOC format
+                                            string strSALIAS2_reformatted = clsE911StaticClass.ReformatStringForExitFeatures(strSALIAS2);
 
-                                            // check if string contains the letter "X" next to a number
-                                            if (Regex.IsMatch(strSALIAS2, @" X\d"))
-                                            {
-                                                strSALIAS2 = strSALIAS2.Replace(" X", " ");
-                                            }
+                                                                            //strSALIAS2 = strSALIAS2.Replace("  ", " ");
+                                                                            //// check for the word "HIGHWAY" and replace it with "SR-"
+                                                                            //strSALIAS2 = strSALIAS2.Replace("-", "");
+                                                                            //strSALIAS2 = strSALIAS2.Replace("ON", "ONR");
+                                                                            //strSALIAS2 = strSALIAS2.Replace("OFF", "OFR");
 
-                                            strSALIAS2 = strSALIAS2.Trim();
-                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2);
+                                                                            //// check if string contains the letter "X" next to a number
+                                                                            //if (Regex.IsMatch(strSALIAS2, @" X\d"))
+                                                                            //{
+                                                                            //    strSALIAS2 = strSALIAS2.Replace(" X", " ");
+                                                                            //}
+
+                                                                            //// shift everthing after the last ONR or OFR and move it to the  
+                                                                            //if (strSALIAS2.Contains("ONR") | strSALIAS2.Contains("OFR"))
+                                                                            //{
+                                                                            //    if (strSALIAS2.Contains("ONR"))
+                                                                            //    {
+                                                                            //        string strRoadName = strSALIAS2.Substring(strSALIAS2.LastIndexOf("ONR") +3); 
+                                                                            //        strRoadName = strRoadName.Trim();
+
+                                                                            //        // now remove those road name from the salias2 string
+                                                                            //        strSALIAS2 = strSALIAS2.Remove(strSALIAS2.IndexOf("ONR") +3);
+
+                                                                            //        // insert the road name into an array of string 
+                                                                            //        string[] arrSALIAS2 = strACSALIAS.Split(' ');
+                                                                            //        string strAssembled = "";
+
+                                                                            //        // loop through each word in the 
+                                                                            //        for (int i = 0; i < arrSALIAS2.Length; i++)
+                                                                            //        {
+                                                                            //            // create new assembled string
+                                                                            //            if (i == 2)
+                                                                            //            {
+                                                                            //                strAssembled = strAssembled + strRoadName + " " + arrSALIAS2[i] + " ";
+                                                                            //            }
+                                                                            //            else
+                                                                            //            {
+                                                                            //                strAssembled = strAssembled + arrSALIAS2[i] + " ";
+                                                                            //            }
+                                                                            //        }
+
+                                                                            //        strSALIAS2 = strAssembled.Trim();
+
+                                                                            //    }
+                                                                            //    if (strSALIAS2.Contains("OFR"))
+                                                                            //    {
+                                                                            //        string strRoadName = strSALIAS2.Substring(strSALIAS2.LastIndexOf("OFR") + 3);
+                                                                            //        strRoadName = strRoadName.Trim();
+
+                                                                            //        // now remove those road name from the salias2 string
+                                                                            //        strSALIAS2 = strSALIAS2.Remove(strSALIAS2.IndexOf("OFR") + 3);
+
+                                                                            //        // insert the road name into the strSALIAS2 string
+                                                                            //        int intIndex = strSALIAS2.IndexOf(' ', strSALIAS2.IndexOf(' ') + 1);
+                                                                            //    }
+                                                
+
+                                                                            //}   
+                                                                            //strSALIAS2 = strSALIAS2.Trim();
+
+                                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS2"), strSALIAS2_reformatted);
                                         }
                                     }
-
                                 }
                             }
-                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
+                            // make sure string is not greater than the field allows
+                            IFields fields = arcFeatureNewSchemaFeat.Fields;
+                            IField fieldLength = fields.get_Field(fields.FindField("STREET"));
+                            if (strSTREET.Length > fieldLength.Length)
+                            {
+                                strSTREET = "error: length > " + fieldLength.Length.ToString();
+                            }
 
+                            arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREET"), strSTREET);
 
                             break;
                         #endregion
