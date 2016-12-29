@@ -111,7 +111,7 @@ namespace E911_Tools
 
                 // Set the search tolerance for reverse geocoding
                 IReverseGeocodingProperties reverseGeocodingProperties = (IReverseGeocodingProperties)reverseGeocoding;
-                reverseGeocodingProperties.SearchDistance = 100;
+                reverseGeocodingProperties.SearchDistance = 1000;
                 reverseGeocodingProperties.SearchDistanceUnits = esriUnits.esriFeet;
 
                 
@@ -123,10 +123,20 @@ namespace E911_Tools
                 while ((arcFeature = arcFeatCur.NextFeature()) != null)
                 {
 
-                    IPoint arcPoint = (IPoint)arcFeature.ShapeCopy;
+                    IPoint arcPoint = (IPoint)arcFeature.Shape;
+
+                    // Create a Point at which to find the address
+                    IAddressGeocoding addressGeocoding = (IAddressGeocoding)reverseGeocoding;
+                    IFields matchFields = addressGeocoding.MatchFields;
+                    IField shapeField = matchFields.get_Field(matchFields.FindField("Shape"));
+                    IPoint point = new PointClass();
+                    point.SpatialReference = shapeField.GeometryDef.SpatialReference;
+                    point.X = arcPoint.X;
+                    point.Y = arcPoint.Y;
+
 
                     // Find the address nearest the Point
-                    IPropertySet addressProperties = reverseGeocoding.ReverseGeocode(arcPoint, false);
+                    IPropertySet addressProperties = reverseGeocoding.ReverseGeocode(point, false);
 
                     // Print the address properties
                     IAddressInputs addressInputs = (IAddressInputs)reverseGeocoding;
