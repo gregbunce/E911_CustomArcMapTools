@@ -1,5 +1,7 @@
-﻿using ESRI.ArcGIS.esriSystem;
+﻿using ESRI.ArcGIS.ArcMapUI;
+using ESRI.ArcGIS.esriSystem;
 using ESRI.ArcGIS.Geodatabase;
+using ESRI.ArcGIS.Location;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -142,8 +144,64 @@ namespace E911_Tools
 
                 return "error: reformatting";
             }
-        
         }
 
+
+
+        public static void GetCurrentMapDocVariables()
+        {
+            try
+            {
+                //get access to the document and the active view
+
+                clsE911Globals.pMxDocument = (IMxDocument)clsE911Globals.arcApplication.Document;
+                clsE911Globals.pMap = clsE911Globals.pMxDocument.FocusMap;
+                clsE911Globals.pActiveView = clsE911Globals.pMxDocument.ActiveView;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "Push Utrans Roads to SGID!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+
+        }
+
+
+        public static IDatabaseLocatorWorkspace GetSDELocatorWorkspace(String server, String instance, String database, String authenication, String version, String username, String pass)
+        {
+            // Set up the SDE connection properties 
+            IPropertySet connectionProperties = new PropertySetClass();
+            connectionProperties.SetProperty("SERVER", server);
+            //propertySet.SetProperty("DBCLIENT", dbclient);
+            connectionProperties.SetProperty("INSTANCE", instance);
+            connectionProperties.SetProperty("DATABASE", database);
+            connectionProperties.SetProperty("AUTHENTICATION_MODE", authenication);
+            connectionProperties.SetProperty("VERSION", version);
+            connectionProperties.SetProperty("USER", username);
+            connectionProperties.SetProperty("PASSWORD", pass);
+
+            //connectionProperties.SetProperty("server", "SDEServer");
+            //connectionProperties.SetProperty("instance", "5151");
+            //connectionProperties.SetProperty("database", "sde");
+            //connectionProperties.SetProperty("user", "sdeUser");
+            //connectionProperties.SetProperty("password", "sdePassword");
+            //connectionProperties.SetProperty("version", "SDE.Default");
+
+            // Get the Workspace
+            System.Object obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriDataSourcesGDB.SdeWorkspaceFactory"));
+            IWorkspaceFactory2 workspaceFactory = obj as IWorkspaceFactory2;
+            IWorkspace workspace = workspaceFactory.Open(connectionProperties, 0);
+
+            obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriLocation.LocatorManager"));
+            ILocatorManager2 locatorManager = obj as ILocatorManager2;
+            ILocatorWorkspace locatorWorkspace = locatorManager.GetLocatorWorkspace(workspace);
+            IDatabaseLocatorWorkspace databaseLocatorWorkspace = (IDatabaseLocatorWorkspace)locatorWorkspace;
+
+            return databaseLocatorWorkspace;
+        }
+    
+    
     }
 }

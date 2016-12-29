@@ -73,6 +73,16 @@ namespace E911_Tools.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap GeocodeAddressLocatorAdd16 {
+            get {
+                object obj = ResourceManager.GetObject("GeocodeAddressLocatorAdd16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap RoadsETL {
             get {
                 object obj = ResourceManager.GetObject("RoadsETL", resourceCulture);
