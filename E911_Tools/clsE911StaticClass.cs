@@ -169,7 +169,7 @@ namespace E911_Tools
         }
 
 
-        public static IDatabaseLocatorWorkspace GetSDELocatorWorkspace(String server, String instance, String database, String authenication, String version, String username, String pass)
+        public static ILocatorWorkspace GetSDELocatorWorkspace(String server, String instance, String database, String authenication, String version, String username, String pass)
         {
             // Set up the SDE connection properties 
             IPropertySet connectionProperties = new PropertySetClass();
@@ -182,13 +182,6 @@ namespace E911_Tools
             connectionProperties.SetProperty("USER", username);
             connectionProperties.SetProperty("PASSWORD", pass);
 
-            //connectionProperties.SetProperty("server", "SDEServer");
-            //connectionProperties.SetProperty("instance", "5151");
-            //connectionProperties.SetProperty("database", "sde");
-            //connectionProperties.SetProperty("user", "sdeUser");
-            //connectionProperties.SetProperty("password", "sdePassword");
-            //connectionProperties.SetProperty("version", "SDE.Default");
-
             // Get the Workspace
             System.Object obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriDataSourcesGDB.SdeWorkspaceFactory"));
             IWorkspaceFactory2 workspaceFactory = obj as IWorkspaceFactory2;
@@ -199,7 +192,23 @@ namespace E911_Tools
             ILocatorWorkspace locatorWorkspace = locatorManager.GetLocatorWorkspace(workspace);
             IDatabaseLocatorWorkspace databaseLocatorWorkspace = (IDatabaseLocatorWorkspace)locatorWorkspace;
 
-            return databaseLocatorWorkspace;
+            return locatorWorkspace;
+        }
+
+
+        public static ILocatorWorkspace GetFileGDBLocatorWorkspace(string path)
+        {
+            // Open a workspace from a file geodatabase
+            System.Object obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriDataSourcesGDB.FileGDBWorkspaceFactory"));
+            IWorkspaceFactory2 workspaceFactory = obj as IWorkspaceFactory2;
+            IWorkspace workspace = workspaceFactory.OpenFromFile(path, 0); // example of path string is... @"C:\UnitedStates.gdb"
+
+            // Get a locator from the locator Workspace
+            obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriLocation.LocatorManager"));
+            ILocatorManager2 locatorManager = obj as ILocatorManager2;
+            ILocatorWorkspace locatorWorkspace = locatorManager.GetLocatorWorkspace(workspace);
+
+            return locatorWorkspace;
         }
     
     
