@@ -88,32 +88,11 @@ namespace E911_Tools
 
   
                 // Get a locator from the locator Workspace
-                //////// Set up the SDE connection properties 
-                //////IPropertySet connectionProperties = new PropertySetClass();
-                //////connectionProperties.SetProperty("SERVER", "");
-                ////////propertySet.SetProperty("DBCLIENT", dbclient);
-                //////connectionProperties.SetProperty("INSTANCE", "sde:sqlserver:sgid.agrc.utah.gov");
-                //////connectionProperties.SetProperty("DATABASE", "SGID10");
-                //////connectionProperties.SetProperty("AUTHENTICATION_MODE", "DBMS");
-                //////connectionProperties.SetProperty("VERSION", "sde.DEFAULT");
-                //////connectionProperties.SetProperty("USER", "agrc");
-                //////connectionProperties.SetProperty("PASSWORD", "agrc");
-
-                //////// Get the Workspace
-                //////System.Object obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriDataSourcesGDB.SdeWorkspaceFactory"));
-                //////IWorkspaceFactory2 workspaceFactory = obj as IWorkspaceFactory2;
-                //////IWorkspace workspace = workspaceFactory.Open(connectionProperties, 0);
-
-                //////obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriLocation.LocatorManager"));
-                //////ILocatorManager2 locatorManager = obj as ILocatorManager2;
-                //////ILocatorWorkspace locatorWorkspace = locatorManager.GetLocatorWorkspace(workspace);
-                ////////IDatabaseLocatorWorkspace databaseLocatorWorkspace = (IDatabaseLocatorWorkspace)locatorWorkspace;
-
                 ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetFileGDBLocatorWorkspace(@"K:\AGRC Projects\E911_Editing\Locators\AddressLocatorData.gdb");
-
                 IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("UtransHwys_AddrLocator_HWYNAME");
+
+                //ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetSDELocatorWorkspace("", "sde:sqlserver:sgid.agrc.utah.gov", "SGID10", "DBMS", "sde.DEFAULT", "agrc", "agrc");
                 //IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("TRANSPORTATION.Locator_RoadsAddrSys_COMPOSITE");
-                //TRANSPORTATION.Locator_RoadsAddrSys_COMPOSITE
 
                 // Set the search tolerance for reverse geocoding
                 IReverseGeocodingProperties reverseGeocodingProperties = (IReverseGeocodingProperties)reverseGeocoding;
@@ -122,7 +101,6 @@ namespace E911_Tools
                 reverseGeocodingProperties.SearchDistanceUnits = esriUnits.esriFeet;
 
                 
-
                 // now loop through the point feature layer
                 IFeatureCursor arcFeatCur = arcFeatLayer.Search(null, false);
                 IFeature arcFeature;
