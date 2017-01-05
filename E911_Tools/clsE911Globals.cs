@@ -75,5 +75,11 @@ namespace E911_Tools
             set;
         }
 
+        public static IFeatureClass arcFeatClassNewSchemaFeat
+        {
+            get;
+            set;
+        }
+
     }
 }
