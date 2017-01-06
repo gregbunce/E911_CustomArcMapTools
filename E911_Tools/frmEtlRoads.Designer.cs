@@ -53,6 +53,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnSelectIntersectSegs = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.chkAssignSythetics = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox7.SuspendLayout();
@@ -95,7 +96,7 @@
             // 
             // pBar
             // 
-            this.pBar.Location = new System.Drawing.Point(19, 65);
+            this.pBar.Location = new System.Drawing.Point(19, 101);
             this.pBar.Name = "pBar";
             this.pBar.Size = new System.Drawing.Size(430, 23);
             this.pBar.TabIndex = 4;
@@ -104,7 +105,7 @@
             // 
             this.lblProgressBar.AutoSize = true;
             this.lblProgressBar.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProgressBar.Location = new System.Drawing.Point(20, 48);
+            this.lblProgressBar.Location = new System.Drawing.Point(20, 84);
             this.lblProgressBar.Name = "lblProgressBar";
             this.lblProgressBar.Size = new System.Drawing.Size(94, 13);
             this.lblProgressBar.TabIndex = 5;
@@ -112,6 +113,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.chkAssignSythetics);
             this.groupBox1.Controls.Add(this.txtBuffer);
             this.groupBox1.Controls.Add(this.label9);
             this.groupBox1.Controls.Add(this.lblProgressBar);
@@ -120,7 +122,7 @@
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox1.Location = new System.Drawing.Point(12, 87);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(493, 100);
+            this.groupBox1.Size = new System.Drawing.Size(493, 142);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "ETL Roads from UTRANS and Custom Segments to FGDB";
@@ -152,7 +154,7 @@
             this.groupBox2.Controls.Add(this.groupBox6);
             this.groupBox2.Controls.Add(this.groupBox5);
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox2.Location = new System.Drawing.Point(13, 215);
+            this.groupBox2.Location = new System.Drawing.Point(13, 235);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(492, 355);
             this.groupBox2.TabIndex = 7;
@@ -353,11 +355,22 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Select Dispatch Center";
             // 
+            // chkAssignSythetics
+            // 
+            this.chkAssignSythetics.AutoSize = true;
+            this.chkAssignSythetics.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkAssignSythetics.Location = new System.Drawing.Point(46, 53);
+            this.chkAssignSythetics.Name = "chkAssignSythetics";
+            this.chkAssignSythetics.Size = new System.Drawing.Size(251, 17);
+            this.chkAssignSythetics.TabIndex = 8;
+            this.chkAssignSythetics.Text = "Assign Synthetic Ranges for HWYs with Zeros?";
+            this.chkAssignSythetics.UseVisualStyleBackColor = true;
+            // 
             // frmEtlRoads
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(521, 584);
+            this.ClientSize = new System.Drawing.Size(521, 602);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -408,5 +421,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.TextBox txtBuffer;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.CheckBox chkAssignSythetics;
     }
 }

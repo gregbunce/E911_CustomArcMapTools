@@ -210,7 +210,12 @@ namespace E911_Tools
 
             return locatorWorkspace;
         }
-    
+
+
+        public static bool IsOdd(double value)
+        {
+            return value % 2 != 0;
+        }
     
     }
 }

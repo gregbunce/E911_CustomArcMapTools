@@ -387,7 +387,8 @@ namespace E911_Tools
                 
                 // get access to utrans database and the centerline feature class
                 //connect to sde
-                IWorkspace workspace = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:utrans.agrc.utah.gov", "UTRANS", "OSA", "sde.DEFAULT");
+                //IWorkspace workspace = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:utrans.agrc.utah.gov", "UTRANS", "OSA", "sde.DEFAULT");
+                IWorkspace workspace = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:utrans.agrc.utah.gov", "UTRANS", "OSA", "TRANSADMIN.EDIT");
                 IFeatureWorkspace featureWorkspace = (IFeatureWorkspace)workspace;
 
                 // get access to utrans roads as feature class
@@ -412,7 +413,7 @@ namespace E911_Tools
                         break;
                     case "TOC":
                         clsTOC instanceTOC_Class = new clsTOC();
-                        instanceTOC_Class.insertTocIntoEtlFeatureClass(arcFeatCurRoadsUtrans, intFeatureCount);
+                        instanceTOC_Class.insertTocIntoEtlFeatureClass(arcFeatCurRoadsUtrans, intFeatureCount, chkAssignSythetics.Checked);
                         break;
 
                 }
@@ -594,6 +595,38 @@ namespace E911_Tools
                 ////////////////////        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("HWYNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("HWYNAME")).ToString().Trim());
                 ////////////////////    }
 
+                ////////////////////    string strDOTRTNAME = "";
+                ////////////////////    strDOTRTNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_RTNAME")).ToString().Trim();
+                ////////////////////    if (strSTREETNAME != "")
+                ////////////////////    {
+                ////////////////////        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("DOT_RTNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_RTNAME")).ToString().Trim());
+                ////////////////////    }
+                ////////////////////    else
+                ////////////////////    {
+                ////////////////////        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
+                ////////////////////    }
+
+                ////////////////////    string strDOTFMILE = "";
+                ////////////////////    strDOTRTNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_F_MILE")).ToString().Trim();
+                ////////////////////    if (strSTREETNAME != "")
+                ////////////////////    {
+                ////////////////////        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("DOT_F_MILE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_RTNAME")).ToString().Trim());
+                ////////////////////    }
+                ////////////////////    else
+                ////////////////////    {
+                ////////////////////        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
+                ////////////////////    }
+
+                ////////////////////    string strDOTTMILE = "";
+                ////////////////////    strDOTRTNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_T_MILE")).ToString().Trim();
+                ////////////////////    if (strSTREETNAME != "")
+                ////////////////////    {
+                ////////////////////        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("DOT_T_MILE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_RTNAME")).ToString().Trim());
+                ////////////////////    }
+                ////////////////////    else
+                ////////////////////    {
+                ////////////////////        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
+                ////////////////////    }
 
                 ////////////////////    // check what dispatch center we are working with, and format the certain fields as needed
                 ////////////////////    // set up the concatination for the STREET field
@@ -1091,7 +1124,11 @@ namespace E911_Tools
                         break;
                     case "TOC":
                         // restrict the segments to ones that david does not concider freeways (divided highways and interstates)
-                        strCountyList = @"CARTOCODE <> 99 and STREETTYPE <> 'FWY'
+//                        strCountyList = @"CARTOCODE NOT IN (99, 7, 1) and STREETTYPE <> 'FWY'
+//                                        AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
+//                                        '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
+//                                        '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
+                        strCountyList = @"CARTOCODE NOT IN (99, 7, 1) and STREETTYPE <> 'FWY' AND HWYNAME <> ''
                                         AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
                                         '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
                                         '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
@@ -1099,7 +1136,7 @@ namespace E911_Tools
                         strCountyPolyWhereClause = "FIPS_STR in ('49049', '49035')";
                         break;
                 }
-
+                
                 // select the county/counties based on the selected dispatch center
                 IQueryFilter arcQF_CountyPolys = new QueryFilter();
                 arcQF_CountyPolys.WhereClause = strCountyPolyWhereClause;
