@@ -99,7 +99,7 @@ namespace E911_Tools
 
                 // Set the search tolerance for reverse geocoding
                 IReverseGeocodingProperties reverseGeocodingProperties = (IReverseGeocodingProperties)reverseGeocoding;
-                //reverseGeocodingProperties.SearchDistance = 1000;
+                //reverseGeocodingProperties.SearchDistance = 3048;
                 reverseGeocodingProperties.SearchDistance = Convert.ToDouble(txtSearchRadius.Text.Trim());
                 reverseGeocodingProperties.SearchDistanceUnits = esriUnits.esriFeet;
 
@@ -195,6 +195,9 @@ namespace E911_Tools
 
                     //    MessageBox.Show(addressField.AliasName + ": " + addressProperties.GetProperty(addressField.Name));
                     //}
+
+                    // update the run date field
+                    arcFeature.set_Value(arcFeature.Fields.FindField("RevGeo_Date"), DateTime.Now);
 
                     arcFeature.Store();
 
