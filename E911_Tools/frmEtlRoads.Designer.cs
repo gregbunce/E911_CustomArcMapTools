@@ -54,6 +54,9 @@
             this.btnSelectIntersectSegs = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.chkAssignSythetics = new System.Windows.Forms.CheckBox();
+            this.chkUpdateRevGeocodeData = new System.Windows.Forms.CheckBox();
+            this.radioLoad = new System.Windows.Forms.RadioButton();
+            this.radioTruncateLoad = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox7.SuspendLayout();
@@ -96,7 +99,7 @@
             // 
             // pBar
             // 
-            this.pBar.Location = new System.Drawing.Point(19, 101);
+            this.pBar.Location = new System.Drawing.Point(19, 141);
             this.pBar.Name = "pBar";
             this.pBar.Size = new System.Drawing.Size(430, 23);
             this.pBar.TabIndex = 4;
@@ -105,7 +108,7 @@
             // 
             this.lblProgressBar.AutoSize = true;
             this.lblProgressBar.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProgressBar.Location = new System.Drawing.Point(20, 84);
+            this.lblProgressBar.Location = new System.Drawing.Point(20, 124);
             this.lblProgressBar.Name = "lblProgressBar";
             this.lblProgressBar.Size = new System.Drawing.Size(94, 13);
             this.lblProgressBar.TabIndex = 5;
@@ -113,6 +116,9 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.radioTruncateLoad);
+            this.groupBox1.Controls.Add(this.radioLoad);
+            this.groupBox1.Controls.Add(this.chkUpdateRevGeocodeData);
             this.groupBox1.Controls.Add(this.chkAssignSythetics);
             this.groupBox1.Controls.Add(this.txtBuffer);
             this.groupBox1.Controls.Add(this.label9);
@@ -122,7 +128,7 @@
             this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox1.Location = new System.Drawing.Point(12, 87);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(493, 142);
+            this.groupBox1.Size = new System.Drawing.Size(493, 179);
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "ETL Roads from UTRANS and Custom Segments to FGDB";
@@ -154,7 +160,7 @@
             this.groupBox2.Controls.Add(this.groupBox6);
             this.groupBox2.Controls.Add(this.groupBox5);
             this.groupBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBox2.Location = new System.Drawing.Point(13, 235);
+            this.groupBox2.Location = new System.Drawing.Point(13, 272);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(492, 355);
             this.groupBox2.TabIndex = 7;
@@ -366,11 +372,46 @@
             this.chkAssignSythetics.Text = "Assign Synthetic Ranges for HWYs with Zeros?";
             this.chkAssignSythetics.UseVisualStyleBackColor = true;
             // 
+            // chkUpdateRevGeocodeData
+            // 
+            this.chkUpdateRevGeocodeData.AutoSize = true;
+            this.chkUpdateRevGeocodeData.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkUpdateRevGeocodeData.Location = new System.Drawing.Point(46, 77);
+            this.chkUpdateRevGeocodeData.Name = "chkUpdateRevGeocodeData";
+            this.chkUpdateRevGeocodeData.Size = new System.Drawing.Size(183, 17);
+            this.chkUpdateRevGeocodeData.TabIndex = 9;
+            this.chkUpdateRevGeocodeData.Text = "Update Reverse Geocode Data?";
+            this.chkUpdateRevGeocodeData.UseVisualStyleBackColor = true;
+            // 
+            // radioLoad
+            // 
+            this.radioLoad.AutoSize = true;
+            this.radioLoad.Checked = true;
+            this.radioLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioLoad.Location = new System.Drawing.Point(236, 77);
+            this.radioLoad.Name = "radioLoad";
+            this.radioLoad.Size = new System.Drawing.Size(94, 17);
+            this.radioLoad.TabIndex = 10;
+            this.radioLoad.TabStop = true;
+            this.radioLoad.Text = "Load (append)";
+            this.radioLoad.UseVisualStyleBackColor = true;
+            // 
+            // radioTruncateLoad
+            // 
+            this.radioTruncateLoad.AutoSize = true;
+            this.radioTruncateLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioTruncateLoad.Location = new System.Drawing.Point(340, 77);
+            this.radioTruncateLoad.Name = "radioTruncateLoad";
+            this.radioTruncateLoad.Size = new System.Drawing.Size(116, 17);
+            this.radioTruncateLoad.TabIndex = 11;
+            this.radioTruncateLoad.Text = "Truncate and Load";
+            this.radioTruncateLoad.UseVisualStyleBackColor = true;
+            // 
             // frmEtlRoads
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(521, 602);
+            this.ClientSize = new System.Drawing.Size(521, 637);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -422,5 +463,8 @@
         private System.Windows.Forms.TextBox txtBuffer;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.CheckBox chkAssignSythetics;
+        private System.Windows.Forms.CheckBox chkUpdateRevGeocodeData;
+        private System.Windows.Forms.RadioButton radioTruncateLoad;
+        private System.Windows.Forms.RadioButton radioLoad;
     }
 }

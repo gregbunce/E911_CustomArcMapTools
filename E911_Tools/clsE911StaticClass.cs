@@ -195,6 +195,31 @@ namespace E911_Tools
             return locatorWorkspace;
         }
 
+        public static ILocatorWorkspace GetSDELocatorWorkspace(String server, String instance, String database, String authenication, String version) 
+        {
+            // Set up the SDE connection properties 
+            IPropertySet connectionProperties = new PropertySetClass();
+            connectionProperties.SetProperty("SERVER", server);
+            //propertySet.SetProperty("DBCLIENT", dbclient);
+            connectionProperties.SetProperty("INSTANCE", instance);
+            connectionProperties.SetProperty("DATABASE", database);
+            connectionProperties.SetProperty("AUTHENTICATION_MODE", authenication);
+            connectionProperties.SetProperty("VERSION", version);
+            //connectionProperties.SetProperty("USER", username);
+            //connectionProperties.SetProperty("PASSWORD", pass);
+
+            // Get the Workspace
+            System.Object obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriDataSourcesGDB.SdeWorkspaceFactory"));
+            IWorkspaceFactory2 workspaceFactory = obj as IWorkspaceFactory2;
+            IWorkspace workspace = workspaceFactory.Open(connectionProperties, 0);
+
+            obj = Activator.CreateInstance(Type.GetTypeFromProgID("esriLocation.LocatorManager"));
+            ILocatorManager2 locatorManager = obj as ILocatorManager2;
+            ILocatorWorkspace locatorWorkspace = locatorManager.GetLocatorWorkspace(workspace);
+            IDatabaseLocatorWorkspace databaseLocatorWorkspace = (IDatabaseLocatorWorkspace)locatorWorkspace;
+
+            return locatorWorkspace;
+        }
 
         public static ILocatorWorkspace GetFileGDBLocatorWorkspace(string path)
         {
@@ -215,6 +240,49 @@ namespace E911_Tools
         public static bool IsOdd(double value)
         {
             return value % 2 != 0;
+        }
+
+        public static IFeatureClass GetFeatureClassWithQueryDef(IDataset arcDataSet, IFeatureWorkspace arcFeatureWS, string strDispatchEtlName, string strWhereClause)
+        {
+        try
+			{
+                    // make idataset from the reverse geocode sde feature class
+                    IDataset arcSDEDataSet_RevGeocoder;
+                    arcSDEDataSet_RevGeocoder = (IDataset)arcDataSet;
+
+                    //IFeatureClass arcETL_HwyRevGeocodeFC = arcFeatWorkspaceETL.OpenFeatureClass(strDispatchEtlName);
+                    //IFeatureLayerDefinition arcFeatLayerDef = arcETL_HwyRevGeocodeFC;
+
+                    IQueryDef queryDef = arcFeatureWS.CreateQueryDef();
+                    //provide list of tables to join
+                    queryDef.Tables = strDispatchEtlName;
+                    //retrieve the fields from all tables
+                    queryDef.SubFields = "*";
+                    //set up join
+                    queryDef.WhereClause = strWhereClause;
+
+                    //Create FeatureDataset. Note the use of .OpenFeatureQuery.
+                    //The name "MyJoin" is the name of the restult of the query def and
+                    //is used in place of a feature class name.
+                    IFeatureDataset featureDataset = arcFeatureWS.OpenFeatureQuery("FeatClassWithQueryDef", queryDef);
+                    //open layer to test against
+                    IFeatureClassContainer featureClassContainer = (IFeatureClassContainer)featureDataset;
+                    IFeatureClass featureClass = featureClassContainer.get_ClassByName("FeatClassWithQueryDef");
+
+                    return featureClass;
+			}
+			catch (Exception ex)
+			{
+
+                return null;
+
+			    MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+			    "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+			    "Error Location:" + Environment.NewLine + ex.StackTrace,
+			    "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+			}
+        
+        
         }
     
     }

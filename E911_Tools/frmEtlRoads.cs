@@ -44,6 +44,7 @@ namespace E911_Tools
         IFeatureClass arcFeatClass_CustomSegs;
         IFeatureClass arcFeatClass_CustomMMSegs;
         IFeatureClass arcFeatClass_CustomFwySegs;
+        IFeatureClass arcFeatClass_RevGecodeData;
         IFeatureClass arcFeatClass_CityCd;
         IFeatureClass arcFeatClass_EmsZone;
         IFeatureClass arcFeatClass_FireZone;
@@ -188,6 +189,7 @@ namespace E911_Tools
                         arcFeatClass_DOC_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DOC_Unique");
                         arcFeatClass_DPS_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DPS_Unique");
                         arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Streets_Custom_Segments");
+                        arcFeatClass_RevGecodeData = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.HwyReverseGeocode");
 
                         // add the feature classes into a list of feature classes
                         listFeatureClasses.Add(arcFeatClass_CustomFwySegs);
@@ -413,7 +415,7 @@ namespace E911_Tools
                         break;
                     case "TOC":
                         clsTOC instanceTOC_Class = new clsTOC();
-                        instanceTOC_Class.insertTocIntoEtlFeatureClass(arcFeatCurRoadsUtrans, intFeatureCount, chkAssignSythetics.Checked);
+                        instanceTOC_Class.insertTocIntoEtlFeatureClass(arcFeatCurRoadsUtrans, intFeatureCount, chkAssignSythetics.Checked, chkUpdateRevGeocodeData.Checked);
                         break;
 
                 }
@@ -1092,7 +1094,62 @@ namespace E911_Tools
                 ////////////////////}
 
 
-                //this.Close();
+                // check if we need to update the reverse geocode data on sde
+                if (chkUpdateRevGeocodeData.Checked)
+                {
+                    IDataset arcSDEDataSet_RevGeocoder = null;
+                    IFeatureClass featureClass = null;
+
+                    if (cboPSAPname.Text.ToString() == "TOC")
+                    {
+                          // make idataset from the reverse geocode sde feature class    
+                        arcSDEDataSet_RevGeocoder = (IDataset)arcFeatClass_RevGecodeData;
+
+                        IQueryDef queryDef = arcFeatWorkspaceETL.CreateQueryDef();
+                        //provide list of tables to join
+                        queryDef.Tables = strDispatchEtlName;
+                        //retrieve the fields from all tables
+                        queryDef.SubFields = "*";
+                        //set up join
+                        queryDef.WhereClause = @"CARTOCODE NOT IN ('99', '7', '1') and STREETTYPE <> 'FWY' AND HWYNAME <> ''
+                                                AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
+                                                '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
+                                                '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
+
+                        //Create FeatureDataset. Note the use of .OpenFeatureQuery.
+                        //The name "MyJoin" is the name of the restult of the query def and
+                        //is used in place of a feature class name.
+                        IFeatureDataset featureDataset = arcFeatWorkspaceETL.OpenFeatureQuery("ReverseGeocodeData", queryDef);
+                        //open layer to test against
+                        IFeatureClassContainer featureClassContainer = (IFeatureClassContainer)featureDataset;
+                        featureClass = featureClassContainer.get_ClassByName("ReverseGeocodeData");
+
+                        //IFeatureClass arcFeatClassWithQueryDef = clsE911StaticClass.GetFeatureClassWithQueryDef();  //IDataset arcDataSet, IFeatureWorkspace arcFeatureWS, string strDispatchEtlName, string strWhereClause
+                        //loadCustomSegmentsFromE911(arcFeatClassWithQueryDef, arcSDEDataSet_RevGeocoder);
+                                            
+                    }
+
+                    // check to see if we are deleting existing features in the reverse geocode data dataset (the source data for the reverse address locator)
+                    if (radioLoad.Checked == true)
+                    {
+                        // do nothing...
+                    }
+                    else if (radioTruncateLoad.Checked == true)
+                    {
+                        // delete the existing features in the dataset
+                        IFeatureCursor arcFeatCur_delete = arcFeatClass_RevGecodeData.Search(null, false);
+                        IFeature arcFeat_delete;
+
+                        while ((arcFeat_delete = arcFeatCur_delete.NextFeature()) != null)
+	                    {
+                            arcFeatCur_delete.DeleteFeature();
+	                    }
+                    }
+
+
+                    // call the laod data function to load the data
+                    loadCustomSegmentsFromE911(featureClass, arcSDEDataSet_RevGeocoder);  
+                }
             }
             catch (Exception ex)
             {

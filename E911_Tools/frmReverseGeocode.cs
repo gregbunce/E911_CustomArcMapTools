@@ -88,8 +88,11 @@ namespace E911_Tools
 
   
                 // Get a locator from the locator Workspace
-                ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetFileGDBLocatorWorkspace(@"K:\AGRC Projects\E911_Editing\Locators\AddressLocatorData.gdb");
-                IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("UtransHwys_AddrLocator_HWYNAME");
+                //ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetFileGDBLocatorWorkspace(@"K:\AGRC Projects\E911_Editing\Locators\AddressLocatorData.gdb");
+                //IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("UtransHwys_AddrLocator_HWYNAME");
+
+                ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetSDELocatorWorkspace("", "sde:sqlserver:e911.agrc.utah.gov", "E911", "OSA", "sde.DEFAULT");
+                IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("E911ADMIN.RevGeocoderTOC_STREETNAME");
 
                 //ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetSDELocatorWorkspace("", "sde:sqlserver:sgid.agrc.utah.gov", "SGID10", "DBMS", "sde.DEFAULT", "agrc", "agrc");
                 //IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("TRANSPORTATION.Locator_RoadsAddrSys_COMPOSITE");
