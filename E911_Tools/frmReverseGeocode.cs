@@ -62,6 +62,26 @@ namespace E911_Tools
         {
             try
             {
+                string strGeocoderName;
+                string strGeocoderDateField;
+
+                if (radioHWYNAME.Checked)
+                {
+
+                    strGeocoderName = "E911ADMIN.RevGeocoderTOC_HWYNAME";
+                    strGeocoderDateField = "RevGeoHWYNAME_Date";
+                }
+                else if (radioSTREETNAME.Checked)
+                {
+                    strGeocoderName = "E911ADMIN.RevGeocoderTOC_STREETNAME";
+                    strGeocoderDateField = "RevGeoSTREETNAME_Date";
+                }
+                else
+                {
+                    MessageBox.Show("Please select a Geocoder.", "Choose Geocoder", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
                 // show the cursor as busy
                 System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
 
@@ -92,7 +112,8 @@ namespace E911_Tools
                 //IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("UtransHwys_AddrLocator_HWYNAME");
 
                 ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetSDELocatorWorkspace("", "sde:sqlserver:e911.agrc.utah.gov", "E911", "OSA", "sde.DEFAULT");
-                IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("E911ADMIN.RevGeocoderTOC_STREETNAME");
+                IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator(strGeocoderName);
+
 
                 //ILocatorWorkspace locatorWorkspace = clsE911StaticClass.GetSDELocatorWorkspace("", "sde:sqlserver:sgid.agrc.utah.gov", "SGID10", "DBMS", "sde.DEFAULT", "agrc", "agrc");
                 //IReverseGeocoding reverseGeocoding = (IReverseGeocoding)locatorWorkspace.GetLocator("TRANSPORTATION.Locator_RoadsAddrSys_COMPOSITE");
@@ -151,14 +172,51 @@ namespace E911_Tools
 
                         // get the first item of of the array
                         string strHseNum = arrReverseGeocodeAddress[0];
+
+                        // get the last item in the array
                         string strHwyName = arrReverseGeocodeAddress[arrReverseGeocodeAddress.Length - 1];
+
+                        // get all items in the arrry except first
+                        string strResultMinusNumber = "";
+                        if (radioHWYNAME.Checked)
+                        {
+                            for (int i = 0; i < arrReverseGeocodeAddress.Length; i++)
+			                {
+			                    if (i != 0)
+	                            {
+                                    // check if value is N, S, E, or W - if so don't add them to the string
+                                    if (arrReverseGeocodeAddress[i].ToString() == "N" | arrReverseGeocodeAddress[i].ToString() == "S" | arrReverseGeocodeAddress[i].ToString() == "E" | arrReverseGeocodeAddress[i].ToString() == "W")
+                                    {
+                                        // don't add the directionals
+                                    }
+                                    else
+                                    {
+                                        strResultMinusNumber = strResultMinusNumber + arrReverseGeocodeAddress[i].ToString();
+                                    }
+	                            }
+			                }                            
+                        }
+                        if (radioSTREETNAME.Checked)
+                        {
+                            for (int i = 0; i < arrReverseGeocodeAddress.Length; i++)
+                            {
+                                if (i != 0)
+                                {
+                                    strResultMinusNumber = strResultMinusNumber + " " + arrReverseGeocodeAddress[i].ToString();
+                                }
+                            }  
+                        }
+                        strResultMinusNumber.TrimStart(' ');
+                        strResultMinusNumber.TrimEnd(' ');
+                        strResultMinusNumber.Trim();
+                        
 
                         // check if the strHseNum is an int before we write it to the feature class address number field
                         int intHseNum;
                         bool isNumeric = int.TryParse(strHseNum, out intHseNum);
 
-                        int intHwyName;
-                        bool isHwyNameNumeric = int.TryParse(strHwyName, out intHwyName);
+                        ////int intHwyName;
+                        ////bool isHwyNameNumeric = int.TryParse(strHwyName, out intHwyName);
 
                         // if the result has an address
                         if (isNumeric)
@@ -167,20 +225,25 @@ namespace E911_Tools
                         }
                         else
                         {
-                            arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseAddressNumber.Text), "0");
+                            arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseAddressNumber.Text), "Verify RevGeo Result");
                         }
 
                         // if the result has a highway name
-                        if (isHwyNameNumeric)
-                        {
-                            arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseHwyName.Text), intHwyName);
-                        }
-                        else
-                        {
-                            arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseHwyName.Text), "0");
-                        }
+                        ////if (isHwyNameNumeric)
+                        ////{
+                        ////    arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseHwyName.Text), intHwyName);
+                        ////}
+                        ////else
+                        ////{
+                        ////    arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseHwyName.Text), "Verify RevGeo Result");
+                        ////}
 
-
+                        // populate the street/hwy name field
+                        if (strResultMinusNumber != "")
+                        {
+                            arcFeature.set_Value(arcFeature.Fields.FindField(cboChooseHwyName.Text), strResultMinusNumber);
+                        }
+                        
                     }
                     else
                     {
@@ -197,7 +260,7 @@ namespace E911_Tools
                     //}
 
                     // update the run date field
-                    arcFeature.set_Value(arcFeature.Fields.FindField("RevGeo_Date"), DateTime.Now);
+                    arcFeature.set_Value(arcFeature.Fields.FindField(strGeocoderDateField), DateTime.Now);
 
                     arcFeature.Store();
 
@@ -286,6 +349,94 @@ namespace E911_Tools
             {
                 e.Handled = true;
             }
+        }
+
+
+
+        // spatially assign the city codes from the dispatch center's city sde layer
+        private void btnAssignCityCD_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // show the cursor as busy
+                System.Windows.Forms.Cursor.Current = Cursors.WaitCursor;
+
+                // get access to the layer that is specified in the choose layer dropdown box
+                //pGFlayer = null;
+                arcFeatLayer = null;
+                // loop through the map's layers and check for the layer with the targeted name (based on the choose layer combobox)
+                for (int i = 0; i < clsE911Globals.pMap.LayerCount; i++)
+                {
+                    if (clsE911Globals.pMap.Layer[i].Name == cboChooseLayer.Text)
+                    {
+                        //pGFlayer = (IGeoFeatureLayer)clsE911Globals.pMap.Layer[i];
+                        arcFeatLayer = (IFeatureLayer)clsE911Globals.pMap.Layer[i];
+                    }
+                }
+
+                // check to assure the user chose a point layer
+                if (arcFeatLayer.FeatureClass.ShapeType != ESRI.ArcGIS.Geometry.esriGeometryType.esriGeometryPoint)
+                {
+                    MessageBox.Show("You must choose a Point Layer to Reverse Geocode.", "Must Be Point Layer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (clsE911Globals.arcFeatClass_CityCD == null)
+                {
+                    // get access to the e911 database  - connect to sde
+                    IWorkspace workspaceE911 = clsE911StaticClass.ConnectToTransactionalVersion("", "sde:sqlserver:e911.agrc.utah.gov", "E911", "OSA", "sde.DEFAULT");
+                    IFeatureWorkspace featureWorkspaceE911 = (IFeatureWorkspace)workspaceE911;
+
+                    clsE911Globals.arcFeatClass_CityCD = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_CITYCD");
+                }
+
+
+                // now loop through the map's point feature layer and intersect point with city boundary to get city code
+                IFeatureCursor arcFeatCur = arcFeatLayer.Search(null, false);
+                IFeature arcFeature;
+
+                while ((arcFeature = arcFeatCur.NextFeature()) != null)
+                {
+
+                    IPoint arcPoint = (IPoint)arcFeature.Shape;
+
+                    // do the intersect
+                    ISpatialFilter arcSpatialFilter = new SpatialFilter();
+                    arcSpatialFilter.Geometry = arcPoint;
+                    arcSpatialFilter.GeometryField = "SHAPE";
+                    arcSpatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
+                    arcSpatialFilter.SubFields = "*";
+
+                    IFeatureCursor arcFeatCurIntersect = clsE911Globals.arcFeatClass_CityCD.Search(arcSpatialFilter, false);
+                    IFeature arcFeatureIntersected = arcFeatCurIntersect.NextFeature();
+
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(arcFeatCurIntersect);
+
+                    string strIntersectedCityCD = "";
+                    if (arcFeatureIntersected != null)
+                    {
+                        strIntersectedCityCD = arcFeatureIntersected.get_Value(arcFeatureIntersected.Fields.FindField("CITYCD")).ToString().Trim();
+                    }
+                    else
+                    {
+                        strIntersectedCityCD = "";
+                    }
+                    
+                    // populate the table with the city code
+                    arcFeature.set_Value(arcFeature.Fields.FindField("CITYCD"), strIntersectedCityCD);
+                    arcFeature.set_Value(arcFeature.Fields.FindField("CITYCD_Date"), DateTime.Now);
+                    arcFeature.Store();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "E911 Tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+
         }
 
 

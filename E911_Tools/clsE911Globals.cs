@@ -81,5 +81,11 @@ namespace E911_Tools
             set;
         }
 
+        public static IFeatureClass arcFeatClass_CityCD
+        {
+            get;
+            set;
+        }
+
     }
 }

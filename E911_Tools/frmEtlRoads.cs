@@ -164,8 +164,8 @@ namespace E911_Tools
                         listFeatureClasses.Add(arcFeatClass_CustomFwySegs);
                         listFeatureClasses.Add(arcFeatClass_CustomMMSegs);
                         listFeatureClasses.Add(arcFeatClass_CustomSegs);
-
-                        //arcFeatClass_CityCd = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CITYCD");
+                        
+                        //clsE911Globals.arcFeatClass_CityCD = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_CITYCD"); // global variable b/c i need access in reverse geocode form
                         //arcFeatClass_EmsZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_EMS_Zones");
                         //arcFeatClass_FireZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Fire_Zones");
                         //arcFeatClass_LawZone = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.StGeorge_Law_Zones");
@@ -190,6 +190,8 @@ namespace E911_Tools
                         arcFeatClass_DPS_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DPS_Unique");
                         arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Streets_Custom_Segments");
                         arcFeatClass_RevGecodeData = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.HwyReverseGeocode");
+                        clsE911Globals.arcFeatClass_CityCD = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_CITYCD"); // global variable b/c i need access in reverse geocode form
+
 
                         // add the feature classes into a list of feature classes
                         listFeatureClasses.Add(arcFeatClass_CustomFwySegs);
@@ -1126,7 +1128,6 @@ namespace E911_Tools
 
                         //IFeatureClass arcFeatClassWithQueryDef = clsE911StaticClass.GetFeatureClassWithQueryDef();  //IDataset arcDataSet, IFeatureWorkspace arcFeatureWS, string strDispatchEtlName, string strWhereClause
                         //loadCustomSegmentsFromE911(arcFeatClassWithQueryDef, arcSDEDataSet_RevGeocoder);
-                                            
                     }
 
                     // check to see if we are deleting existing features in the reverse geocode data dataset (the source data for the reverse address locator)
