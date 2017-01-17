@@ -696,7 +696,7 @@ namespace E911_Tools
                 string strReturn = "";
                 return strReturn;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return "Error";
                 //MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
