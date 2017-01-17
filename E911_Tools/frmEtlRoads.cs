@@ -310,7 +310,7 @@ namespace E911_Tools
                 //load the custom segments and the mile marker segments to the blank streets etl feature class
                 foreach (var featureClass in listFeatureClasses)
                 {
-                    //loadCustomSegmentsFromE911(featureClass, arcDataSetETL2);
+                    loadCustomSegmentsFromE911(featureClass, arcDataSetETL2);
                 }
                 
                 // call the method to load (insert) segments data from utrans
@@ -1181,16 +1181,18 @@ namespace E911_Tools
                         //strCountyPolyWhereClause = "FIPS_STR in (49053, 49021)"; // testing to see if more than one poly can be buffered via union
                         break;
                     case "TOC":
-                        // restrict the segments to ones that david does not concider freeways (divided highways and interstates)
-//                        strCountyList = @"CARTOCODE NOT IN (99, 7, 1) and STREETTYPE <> 'FWY'
-//                                        AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
-//                                        '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
-//                                        '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
-                        strCountyList = @"CARTOCODE NOT IN (99, 7, 1) and STREETTYPE <> 'FWY' AND HWYNAME <> ''
+                        // this query restrict the segments to ones that david does not concider freeways (divided highways and interstates)
+                        strCountyList = @"CARTOCODE NOT IN (99, 7, 1) and STREETTYPE <> 'FWY'
                                         AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
                                         '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
                                         '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
-                        //strCountyList = "CARTOCODE in (1,7) and streettype in ('FWY','RAMP')";
+
+                        //                            // this query gets only the highways from utrans... that are not considered freeways (per David) - just highways only
+                        //                            strCountyList = @"CARTOCODE NOT IN (99, 7, 1) and STREETTYPE <> 'FWY' AND HWYNAME <> ''
+                        //                                        AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
+                        //                                        '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
+                        //                                        '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
+                        
                         strCountyPolyWhereClause = "FIPS_STR in ('49049', '49035')";
                         break;
                 }
