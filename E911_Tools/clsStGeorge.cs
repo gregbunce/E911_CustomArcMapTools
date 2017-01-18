@@ -15,5 +15,21 @@ namespace E911_Tools
 
         }
 
+        // this method formats the STREET field for St George specifics 
+        public string StGeorgeSTREET(string strString)
+        {
+            try
+            {
+
+
+                string strReturn = "";
+                return strReturn;
+            }
+            catch (Exception)
+            {
+                return "Error";
+            }
+        }
+
     }
 }

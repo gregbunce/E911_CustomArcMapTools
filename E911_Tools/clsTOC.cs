@@ -730,10 +730,6 @@ namespace E911_Tools
             catch (Exception)
             {
                 return "Error";
-                //MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
-                //"Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
-                //"Error Location:" + Environment.NewLine + ex.StackTrace,
-                //"UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
 
