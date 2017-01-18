@@ -48,7 +48,9 @@ namespace E911_Tools
                     }
                     else
                     {
-                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
+                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), null);
+
                     }
 
 
@@ -130,7 +132,7 @@ namespace E911_Tools
                     }
                     else
                     {
-                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("PREDIR"),  DBNull.Value);
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("PREDIR"),  DBNull.Value);
                     }
 
                     string strSTREETTYPE = "";
@@ -141,7 +143,7 @@ namespace E911_Tools
                     }
                     else
                     {
-                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETTYPE"), "");
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETTYPE"), DBNull.Value);
                     }
 
                     string strSUFDIR = "";
@@ -152,7 +154,7 @@ namespace E911_Tools
                     }
                     else
                     {
-                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SUFDIR"), DBNull.Value);
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SUFDIR"), DBNull.Value);
                     }
 
                     string strALIAS1 = "";
@@ -161,12 +163,20 @@ namespace E911_Tools
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString());
                     }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1"), DBNull.Value);
+                    }
 
                     string strALIAS1TYPE = "";
                     strALIAS1TYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim();
                     if (strALIAS1TYPE != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1TYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim());
+                    }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS1TYPE"), DBNull.Value);
                     }
 
                     string strALIAS2 = "";
@@ -175,12 +185,20 @@ namespace E911_Tools
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2")).ToString().Trim());
                     }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2"), DBNull.Value);
+                    }
 
                     string strALIAS2TYPE = "";
                     strALIAS2TYPE = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim();
                     if (strALIAS2TYPE != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2TYPE"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim());
+                    }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ALIAS2TYPE"), DBNull.Value);
                     }
 
                     string strACSALIAS = "";
@@ -189,6 +207,10 @@ namespace E911_Tools
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSALIAS"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSALIAS")).ToString().Trim());
                     }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSALIAS"), DBNull.Value);
+                    }
 
                     string strACSNAME = "";
                     strACSNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSNAME")).ToString().Trim();
@@ -196,12 +218,20 @@ namespace E911_Tools
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSNAME")).ToString().Trim());
                     }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSNAME"), DBNull.Value);
+                    }
 
                     string strACSSUF = "";
                     strACSSUF = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSSUF")).ToString().Trim();
                     if (strACSSUF != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSSUF"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ACSSUF")).ToString().Trim());
+                    }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("ACSSUF"), DBNull.Value);
                     }
 
                     string strZIPLEFT = "";
@@ -231,16 +261,16 @@ namespace E911_Tools
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("HWYNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("HWYNAME")).ToString().Trim());
                     }
+                    else
+                    {
+                        arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("HWYNAME"), DBNull.Value);
+                    }
 
                     string strDOTRTNAME = "";
                     strDOTRTNAME = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_RTNAME")).ToString().Trim();
                     if (strDOTRTNAME != "")
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("DOT_RTNAME"), arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("DOT_RTNAME")).ToString().Trim());
-                    }
-                    else
-                    {
-                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("STREETNAME"), DBNull.Value);
                     }
 
                     string strDOTFMILE = "";
