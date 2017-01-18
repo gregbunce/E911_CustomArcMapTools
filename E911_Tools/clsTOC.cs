@@ -133,6 +133,7 @@ namespace E911_Tools
                     else
                     {
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("PREDIR"),  DBNull.Value);
+                        //arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("PREDIR"), null);
                     }
 
                     string strSTREETTYPE = "";
