@@ -186,7 +186,7 @@ namespace E911_Tools
                         arcFeatClass_CampusBld2 = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.SLCC_Bldgs");
                         arcFeatClass_SplitStreets = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Split_Streets");
                         arcFeatClass_DNR_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DNR_Unique");
-                        arcFeatClass_DOC_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DOC_Unique");
+                        //arcFeatClass_DOC_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DOC_Unique");  david wants to append these by hand after the spillman tools b/c they are outside of his toc polygon boundaries 
                         arcFeatClass_DPS_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DPS_Unique");
                         arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Streets_Custom_Segments");
                         arcFeatClass_RevGecodeData = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.HwyReverseGeocode");
