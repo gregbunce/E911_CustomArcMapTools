@@ -210,6 +210,7 @@ namespace E911_Tools
                 // get access to the dispacth center's schema file
                 IFeatureClass arcFeatureClassSchema = arcFeatWorkspaceSchema.OpenFeatureClass(strDispatchSchema);
 
+
                 // see if the etl feature class already exists (maybe from last run of the tool) - if so rename it
                 IWorkspace2 arcWorkspace2_ETL = (IWorkspace2)arcFeatWorkspaceETL;
                 if (arcWorkspace2_ETL.get_NameExists(esriDatasetType.esriDTFeatureClass, strDispatchEtlName) == true)
@@ -218,8 +219,8 @@ namespace E911_Tools
                     IDataset arcDataSetETL = (IDataset)arcFC_ETL;
                     arcDataSetETL.Rename(strDispatchEtlName + "_OldOn" + DateTime.Now.ToString("yyyyMMdd"));
                 }
-                
-                
+
+
                 // transfer the feature class to the staging ground fgdb so we can load data into it
                 // Create workspace name objects.
                 IWorkspaceName sourceWorkspaceName = new WorkspaceNameClass();
@@ -307,7 +308,7 @@ namespace E911_Tools
                 {
                     loadCustomSegmentsFromE911(featureClass, arcDataSetETL2);
                 }
-                
+
                 // call the method to load (insert) segments data from utrans
                 insertNewFeaturesFromUtrans();
 
@@ -1624,9 +1625,32 @@ namespace E911_Tools
                     string strSUFDIR = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("SUFDIR")).ToString();
                     string strSOURCE = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE")).ToString();
 
-                    // create the query
-                    strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
-                        " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and STREETTYPE = '" + strSTREETTYPE + "' and SUFDIR = '" + strSUFDIR + "' and SOURCE <> '" + strSOURCE + "'";
+                    // create the query (check if sufdir contains a value - to determine the query)
+                    if (strPREDIR != "" & strSTREETNAME != "" & strSTREETTYPE == "" & strSUFDIR == "") // sufdir and streettype are null
+                    {
+                        strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
+                            " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and SOURCE is null"; 
+                    }
+                    else if (strPREDIR != "" & strSTREETNAME != "" & strSTREETTYPE == "" & strSUFDIR != "") // only streetype is null
+                    {
+                        strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
+                            " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and SUFDIR = '" + strSUFDIR + "' and SOURCE is null";
+                    }
+                    else if (strPREDIR != "" & strSTREETNAME != "" & strSTREETTYPE != "" & strSUFDIR == "") // only sufdir is null
+                    {
+                        strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
+                           " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and STREETTYPE = '" + strSTREETTYPE + "' and SOURCE is null";                        
+                    }
+                    else if (strPREDIR != "" & strSTREETNAME != "" & strSTREETTYPE != "" & strSUFDIR != "") // there are no null values
+                    {
+                        strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
+                            " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and STREETTYPE = '" + strSTREETTYPE + "' and SUFDIR = '" + strSUFDIR + "' and SOURCE is null";
+                    }
+                    else // catch all
+                    {
+                        strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
+                            " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and STREETTYPE = '" + strSTREETTYPE + "' and SUFDIR = '" + strSUFDIR + "' and SOURCE is null";
+                    }
 
                     IQueryFilter arcQF_SplitStreetsMatch = new QueryFilter();
                     arcQF_SplitStreetsMatch.WhereClause = strQueryFilter;
@@ -1645,22 +1669,25 @@ namespace E911_Tools
                         {
                             // delete the feature
                             arcFeat_ETL_SplitStreetMatch.Delete();
-                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "Found in ETL and Deleted");                            
+                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("NOTES"), "Found in ETL and Deleted " + DateTime.Now.ToShortDateString());                            
                         }
                         else if (intFeatureCountySplitStreetsFound > 1)
                         {
-                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "More than one Found in ETL");  
+                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("NOTES"), "More than one Found in ETL " + DateTime.Now.ToShortDateString());  
                         }
                         else if (intFeatureCountySplitStreetsFound == 0)
                         {
-                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "Found but not found");
+                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("NOTES"), "Found but not found " + DateTime.Now.ToShortDateString());
                         }
                     }
                     else
                     {
                         // mention in the notes field that we didn't find a match in the ETL layer
-                        arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "Not Found in ETL");
+                        arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("NOTES"), "Not Found in ETL " + DateTime.Now.ToShortDateString());
                     }
+
+                    // store the split_streets layer
+                    arcFeat_SplitStreetLayer.Store();
 
                     // release the ETL cursor each time through
                     System.Runtime.InteropServices.Marshal.ReleaseComObject(arcFeatCur_ETL_SplitStreetMatch);
