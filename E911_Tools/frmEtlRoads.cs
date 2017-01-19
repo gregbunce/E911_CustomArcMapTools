@@ -183,7 +183,7 @@ namespace E911_Tools
                         arcFeatClass_DNR_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DNR_Unique");
                         //arcFeatClass_DOC_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DOC_Unique");  david wants to append these by hand after the spillman tools b/c they are outside of his toc polygon boundaries 
                         arcFeatClass_DPS_Unique = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_Streets_DPS_Unique");
-                        arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Streets_Custom_Segments");
+                        //arcFeatClass_CustomSegs = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.Streets_Custom_Segments");  david doesn't what these appended either
                         arcFeatClass_RevGecodeData = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.HwyReverseGeocode");
                         clsE911Globals.arcFeatClass_CityCD = featureWorkspaceE911.OpenFeatureClass("E911.E911ADMIN.TOC_CITYCD"); // global variable b/c i need access in reverse geocode form
 
@@ -195,9 +195,9 @@ namespace E911_Tools
                         listFeatureClasses.Add(arcFeatClass_CampusBld2);
                         listFeatureClasses.Add(arcFeatClass_SplitStreets);
                         listFeatureClasses.Add(arcFeatClass_DNR_Unique);
-                        listFeatureClasses.Add(arcFeatClass_DOC_Unique);
+                        //listFeatureClasses.Add(arcFeatClass_DOC_Unique);
                         listFeatureClasses.Add(arcFeatClass_DPS_Unique);
-                        listFeatureClasses.Add(arcFeatClass_CustomSegs);
+                        //listFeatureClasses.Add(arcFeatClass_CustomSegs);
 
                         workspaceFactoryETL = (IWorkspaceFactory)Activator.CreateInstance(factoryType);
                         arcFeatWorkspaceETL = (IFeatureWorkspace)workspaceFactoryETL.OpenFromFile(@"K:\AGRC Projects\E911_Editing\TOC\Data\TOC_E911_ETL.gdb", 0);
@@ -310,6 +310,19 @@ namespace E911_Tools
                 
                 // call the method to load (insert) segments data from utrans
                 insertNewFeaturesFromUtrans();
+
+                // check if we need to update the reverse geocode data on sde
+                if (chkUpdateRevGeocodeData.Checked)
+                {
+                    // call the mehtod to update the data
+                    UpdateReverseGeocodeData();
+                }
+
+                // remove the added matching utrans segments that match a custom Split_Streets segment 
+                if (chkRemoveSplitStreets.Checked)
+                {
+                    removeSplitStreetsSegments();
+                }
 
                 MessageBox.Show("The E911 Tool finished the roads ETL!  The output feature class from this process is located here: " + strTargetWorkSpace + ".", "Finished!", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
@@ -932,12 +945,6 @@ namespace E911_Tools
 
                 }
 
-                // check if we need to update the reverse geocode data on sde
-                if (chkUpdateRevGeocodeData.Checked)
-                {
-                    // call the mehtod to update the data
-                    UpdateReverseGeocodeData();
-                }
             }
             catch (Exception ex)
             {
@@ -1590,7 +1597,88 @@ namespace E911_Tools
                 "Error Location:" + Environment.NewLine + ex.StackTrace,
                 "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
-        
         }
+
+
+        // this method removes the split_streets segments that were added during the utrans import
+        private void removeSplitStreetsSegments()
+        {
+            try
+            {
+                // loop through the custom split_streets custom segment layer and check if matching feature in etl layer
+                IFeatureCursor arcFeatCur_SplitStreetsLayer = arcFeatClass_SplitStreets.Search(null, false);
+                IFeature arcFeat_SplitStreetLayer;
+
+
+                while ((arcFeat_SplitStreetLayer = arcFeatCur_SplitStreetsLayer.NextFeature()) != null)
+                {
+                    // set up query filter and feature cursor on ETL layer to check for matching split_streets segment
+                    string strQueryFilter = string.Empty;
+                    string strL_F_ADD = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("L_F_ADD")).ToString();
+                    string strL_T_ADD = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("L_T_ADD")).ToString();
+                    string strR_F_ADD = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("R_F_ADD")).ToString();
+                    string strR_T_ADD = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("R_T_ADD")).ToString();
+                    string strPREDIR = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("PREDIR")).ToString();
+                    string strSTREETNAME = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("STREETNAME")).ToString();
+                    string strSTREETTYPE = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("STREETTYPE")).ToString();
+                    string strSUFDIR = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("SUFDIR")).ToString();
+                    string strSOURCE = arcFeat_SplitStreetLayer.get_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE")).ToString();
+
+                    // create the query
+                    strQueryFilter = @"L_F_ADD = " + strL_F_ADD + " and L_T_ADD = " + strL_T_ADD + " and R_F_ADD = " + strR_F_ADD + " and R_T_ADD = " + strR_T_ADD +
+                        " and PREDIR = '" + strPREDIR + "' and STREETNAME = '" + strSTREETNAME + "' and STREETTYPE = '" + strSTREETTYPE + "' and SUFDIR = '" + strSUFDIR + "' and SOURCE <> '" + strSOURCE + "'";
+
+                    IQueryFilter arcQF_SplitStreetsMatch = new QueryFilter();
+                    arcQF_SplitStreetsMatch.WhereClause = strQueryFilter;
+
+
+                    IFeatureCursor arcFeatCur_ETL_SplitStreetMatch = clsE911Globals.arcFeatClassNewSchemaFeat.Search(arcQF_SplitStreetsMatch, false);
+                    IFeature arcFeat_ETL_SplitStreetMatch = arcFeatCur_ETL_SplitStreetMatch.NextFeature();
+
+                    // check if matching feature found
+                    if (arcFeat_ETL_SplitStreetMatch != null)
+                    {
+                        // check if only one segment was found
+                        int intFeatureCountySplitStreetsFound = 0;
+                        intFeatureCountySplitStreetsFound = clsE911Globals.arcFeatClassNewSchemaFeat.FeatureCount(arcQF_SplitStreetsMatch);
+                        if (intFeatureCountySplitStreetsFound == 1)
+                        {
+                            // delete the feature
+                            arcFeat_ETL_SplitStreetMatch.Delete();
+                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "Found in ETL and Deleted");                            
+                        }
+                        else if (intFeatureCountySplitStreetsFound > 1)
+                        {
+                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "More than one Found in ETL");  
+                        }
+                        else if (intFeatureCountySplitStreetsFound == 0)
+                        {
+                            arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "Found but not found");
+                        }
+                    }
+                    else
+                    {
+                        // mention in the notes field that we didn't find a match in the ETL layer
+                        arcFeat_SplitStreetLayer.set_Value(arcFeat_SplitStreetLayer.Fields.FindField("SOURCE"), "Not Found in ETL");
+                    }
+
+                    // release the ETL cursor each time through
+                    System.Runtime.InteropServices.Marshal.ReleaseComObject(arcFeatCur_ETL_SplitStreetMatch);
+                }
+
+                // release the cursor for the split_streets custom layer
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(arcFeatCur_SplitStreetsLayer);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        }
+
+
     }
 }

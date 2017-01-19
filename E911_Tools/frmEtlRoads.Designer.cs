@@ -33,6 +33,10 @@
             this.pBar = new System.Windows.Forms.ProgressBar();
             this.lblProgressBar = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioTruncateLoad = new System.Windows.Forms.RadioButton();
+            this.radioLoad = new System.Windows.Forms.RadioButton();
+            this.chkUpdateRevGeocodeData = new System.Windows.Forms.CheckBox();
+            this.chkAssignSythetics = new System.Windows.Forms.CheckBox();
             this.txtBuffer = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -53,10 +57,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnSelectIntersectSegs = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.chkAssignSythetics = new System.Windows.Forms.CheckBox();
-            this.chkUpdateRevGeocodeData = new System.Windows.Forms.CheckBox();
-            this.radioLoad = new System.Windows.Forms.RadioButton();
-            this.radioTruncateLoad = new System.Windows.Forms.RadioButton();
+            this.chkRemoveSplitStreets = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox7.SuspendLayout();
@@ -116,6 +117,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.chkRemoveSplitStreets);
             this.groupBox1.Controls.Add(this.radioTruncateLoad);
             this.groupBox1.Controls.Add(this.radioLoad);
             this.groupBox1.Controls.Add(this.chkUpdateRevGeocodeData);
@@ -132,6 +134,52 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "ETL Roads from UTRANS and Custom Segments to FGDB";
+            // 
+            // radioTruncateLoad
+            // 
+            this.radioTruncateLoad.AutoSize = true;
+            this.radioTruncateLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioTruncateLoad.Location = new System.Drawing.Point(340, 77);
+            this.radioTruncateLoad.Name = "radioTruncateLoad";
+            this.radioTruncateLoad.Size = new System.Drawing.Size(116, 17);
+            this.radioTruncateLoad.TabIndex = 11;
+            this.radioTruncateLoad.Text = "Truncate and Load";
+            this.radioTruncateLoad.UseVisualStyleBackColor = true;
+            // 
+            // radioLoad
+            // 
+            this.radioLoad.AutoSize = true;
+            this.radioLoad.Checked = true;
+            this.radioLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioLoad.Location = new System.Drawing.Point(236, 77);
+            this.radioLoad.Name = "radioLoad";
+            this.radioLoad.Size = new System.Drawing.Size(94, 17);
+            this.radioLoad.TabIndex = 10;
+            this.radioLoad.TabStop = true;
+            this.radioLoad.Text = "Load (append)";
+            this.radioLoad.UseVisualStyleBackColor = true;
+            // 
+            // chkUpdateRevGeocodeData
+            // 
+            this.chkUpdateRevGeocodeData.AutoSize = true;
+            this.chkUpdateRevGeocodeData.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkUpdateRevGeocodeData.Location = new System.Drawing.Point(46, 77);
+            this.chkUpdateRevGeocodeData.Name = "chkUpdateRevGeocodeData";
+            this.chkUpdateRevGeocodeData.Size = new System.Drawing.Size(183, 17);
+            this.chkUpdateRevGeocodeData.TabIndex = 9;
+            this.chkUpdateRevGeocodeData.Text = "Update Reverse Geocode Data?";
+            this.chkUpdateRevGeocodeData.UseVisualStyleBackColor = true;
+            // 
+            // chkAssignSythetics
+            // 
+            this.chkAssignSythetics.AutoSize = true;
+            this.chkAssignSythetics.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkAssignSythetics.Location = new System.Drawing.Point(46, 53);
+            this.chkAssignSythetics.Name = "chkAssignSythetics";
+            this.chkAssignSythetics.Size = new System.Drawing.Size(251, 17);
+            this.chkAssignSythetics.TabIndex = 8;
+            this.chkAssignSythetics.Text = "Assign Synthetic Ranges for HWYs with Zeros?";
+            this.chkAssignSythetics.UseVisualStyleBackColor = true;
             // 
             // txtBuffer
             // 
@@ -361,51 +409,18 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Select Dispatch Center";
             // 
-            // chkAssignSythetics
+            // chkRemoveSplitStreets
             // 
-            this.chkAssignSythetics.AutoSize = true;
-            this.chkAssignSythetics.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkAssignSythetics.Location = new System.Drawing.Point(46, 53);
-            this.chkAssignSythetics.Name = "chkAssignSythetics";
-            this.chkAssignSythetics.Size = new System.Drawing.Size(251, 17);
-            this.chkAssignSythetics.TabIndex = 8;
-            this.chkAssignSythetics.Text = "Assign Synthetic Ranges for HWYs with Zeros?";
-            this.chkAssignSythetics.UseVisualStyleBackColor = true;
-            // 
-            // chkUpdateRevGeocodeData
-            // 
-            this.chkUpdateRevGeocodeData.AutoSize = true;
-            this.chkUpdateRevGeocodeData.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chkUpdateRevGeocodeData.Location = new System.Drawing.Point(46, 77);
-            this.chkUpdateRevGeocodeData.Name = "chkUpdateRevGeocodeData";
-            this.chkUpdateRevGeocodeData.Size = new System.Drawing.Size(183, 17);
-            this.chkUpdateRevGeocodeData.TabIndex = 9;
-            this.chkUpdateRevGeocodeData.Text = "Update Reverse Geocode Data?";
-            this.chkUpdateRevGeocodeData.UseVisualStyleBackColor = true;
-            // 
-            // radioLoad
-            // 
-            this.radioLoad.AutoSize = true;
-            this.radioLoad.Checked = true;
-            this.radioLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioLoad.Location = new System.Drawing.Point(236, 77);
-            this.radioLoad.Name = "radioLoad";
-            this.radioLoad.Size = new System.Drawing.Size(94, 17);
-            this.radioLoad.TabIndex = 10;
-            this.radioLoad.TabStop = true;
-            this.radioLoad.Text = "Load (append)";
-            this.radioLoad.UseVisualStyleBackColor = true;
-            // 
-            // radioTruncateLoad
-            // 
-            this.radioTruncateLoad.AutoSize = true;
-            this.radioTruncateLoad.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioTruncateLoad.Location = new System.Drawing.Point(340, 77);
-            this.radioTruncateLoad.Name = "radioTruncateLoad";
-            this.radioTruncateLoad.Size = new System.Drawing.Size(116, 17);
-            this.radioTruncateLoad.TabIndex = 11;
-            this.radioTruncateLoad.Text = "Truncate and Load";
-            this.radioTruncateLoad.UseVisualStyleBackColor = true;
+            this.chkRemoveSplitStreets.AutoSize = true;
+            this.chkRemoveSplitStreets.Checked = true;
+            this.chkRemoveSplitStreets.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkRemoveSplitStreets.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkRemoveSplitStreets.Location = new System.Drawing.Point(46, 101);
+            this.chkRemoveSplitStreets.Name = "chkRemoveSplitStreets";
+            this.chkRemoveSplitStreets.Size = new System.Drawing.Size(343, 17);
+            this.chkRemoveSplitStreets.TabIndex = 12;
+            this.chkRemoveSplitStreets.Text = "Remove UTRANS segments matching Split_Streets Custom Layer?";
+            this.chkRemoveSplitStreets.UseVisualStyleBackColor = true;
             // 
             // frmEtlRoads
             // 
@@ -466,5 +481,6 @@
         private System.Windows.Forms.CheckBox chkUpdateRevGeocodeData;
         private System.Windows.Forms.RadioButton radioTruncateLoad;
         private System.Windows.Forms.RadioButton radioLoad;
+        private System.Windows.Forms.CheckBox chkRemoveSplitStreets;
     }
 }
