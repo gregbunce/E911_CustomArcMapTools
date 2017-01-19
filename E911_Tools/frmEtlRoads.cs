@@ -930,64 +930,13 @@ namespace E911_Tools
                     // preform the increment of the progress bar
                     pBar.PerformStep();
 
+                }
 
-                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                    // check if we need to update the reverse geocode data on sde (CREATE SEPERATE METHOD FOR THIS BLOCK)
-                    if (chkUpdateRevGeocodeData.Checked)
-                    {
-                        IDataset arcSDEDataSet_RevGeocoder = null;
-                        IFeatureClass featureClass = null;
-
-                        if (cboPSAPname.Text.ToString() == "TOC")
-                        {
-                            // make idataset from the reverse geocode sde feature class    
-                            arcSDEDataSet_RevGeocoder = (IDataset)arcFeatClass_RevGecodeData;
-
-                            IQueryDef queryDef = arcFeatWorkspaceETL.CreateQueryDef();
-                            //provide list of tables to join
-                            queryDef.Tables = strDispatchEtlName;
-                            //retrieve the fields from all tables
-                            queryDef.SubFields = "*";
-                            //set up join
-                            queryDef.WhereClause = @"CARTOCODE NOT IN ('99', '7', '1') and STREETTYPE <> 'FWY' AND HWYNAME <> ''
-                                                AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
-                                                '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
-                                                 '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
-
-                            //Create FeatureDataset. Note the use of .OpenFeatureQuery.
-                            //The name "MyJoin" is the name of the restult of the query def and
-                            //is used in place of a feature class name.
-                            IFeatureDataset featureDataset = arcFeatWorkspaceETL.OpenFeatureQuery("ReverseGeocodeData", queryDef);
-                            //open layer to test against
-                            IFeatureClassContainer featureClassContainer = (IFeatureClassContainer)featureDataset;
-                            featureClass = featureClassContainer.get_ClassByName("ReverseGeocodeData");
-
-                            //IFeatureClass arcFeatClassWithQueryDef = clsE911StaticClass.GetFeatureClassWithQueryDef();  //IDataset arcDataSet, IFeatureWorkspace arcFeatureWS, string strDispatchEtlName, string strWhereClause
-                            //loadCustomSegmentsFromE911(arcFeatClassWithQueryDef, arcSDEDataSet_RevGeocoder);
-                        }
-
-                        // check to see if we are deleting existing features in the reverse geocode data dataset (the source data for the reverse address locator)
-                        if (radioLoad.Checked == true)
-                        {
-                            // do nothing...
-                        }
-                        else if (radioTruncateLoad.Checked == true)
-                        {
-                            // delete the existing features in the dataset
-                            IFeatureCursor arcFeatCur_delete = arcFeatClass_RevGecodeData.Search(null, false);
-                            IFeature arcFeat_delete;
-
-                            while ((arcFeat_delete = arcFeatCur_delete.NextFeature()) != null)
-                            {
-                                arcFeatCur_delete.DeleteFeature();
-                            }
-                        }
-                        // call the laod data function to load the data
-                        loadCustomSegmentsFromE911(featureClass, arcSDEDataSet_RevGeocoder);
-                    }
-
-
+                // check if we need to update the reverse geocode data on sde
+                if (chkUpdateRevGeocodeData.Checked)
+                {
+                    // call the mehtod to update the data
+                    UpdateReverseGeocodeData();
                 }
             }
             catch (Exception ex)
@@ -1571,5 +1520,77 @@ namespace E911_Tools
             e.Handled = !char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar);
         }
 
+
+
+        // this method gets called if the user checks the box that says they want to update the reverse geocode data on SDE
+        private void UpdateReverseGeocodeData()
+        {
+            try
+            {
+                IDataset arcSDEDataSet_RevGeocoder = null;
+                IFeatureClass featureClass = null;
+
+                // make idataset from the reverse geocode sde feature class    
+                arcSDEDataSet_RevGeocoder = (IDataset)arcFeatClass_RevGecodeData;
+
+                IQueryDef queryDef = arcFeatWorkspaceETL.CreateQueryDef();
+                //provide list of tables to join
+                queryDef.Tables = strDispatchEtlName;
+                //retrieve the fields from all tables
+                queryDef.SubFields = "*";
+
+                if (cboPSAPname.Text.ToString() == "TOC")
+                {
+                    //set up join
+                    queryDef.WhereClause = @"CARTOCODE NOT IN ('99', '7', '1') and STREETTYPE <> 'FWY' AND HWYNAME <> ''
+                                            AND FULLNAME NOT LIKE  '% SB %' AND  FULLNAME NOT LIKE  '% NB %' AND FULLNAME NOT LIKE  
+                                            '% EB %' AND  FULLNAME NOT LIKE  '% WB %' AND FULLNAME NOT LIKE  '% SB' AND  FULLNAME NOT LIKE  
+                                                '% NB' AND FULLNAME NOT LIKE  '% EB' AND  FULLNAME NOT LIKE  '% WB'";
+                }
+                if (cboPSAPname.Text.ToString() == "StGeorge")
+                {
+                    // we don't have reverse geocode data for st george so just exit this method
+                    return;
+                }
+
+
+                //Create FeatureDataset. Note the use of .OpenFeatureQuery.
+                //The name "MyJoin" is the name of the restult of the query def and
+                //is used in place of a feature class name.
+                IFeatureDataset featureDataset = arcFeatWorkspaceETL.OpenFeatureQuery("ReverseGeocodeData", queryDef);
+                //open layer to test against
+                IFeatureClassContainer featureClassContainer = (IFeatureClassContainer)featureDataset;
+                featureClass = featureClassContainer.get_ClassByName("ReverseGeocodeData");
+
+
+                // check to see if we are deleting existing features in the reverse geocode data dataset (the source data for the reverse address locator)
+                if (radioLoad.Checked == true)
+                {
+                    // do nothing...
+                }
+                else if (radioTruncateLoad.Checked == true)
+                {
+                    // delete the existing features in the dataset
+                    IFeatureCursor arcFeatCur_delete = arcFeatClass_RevGecodeData.Search(null, false);
+                    IFeature arcFeat_delete;
+
+                    while ((arcFeat_delete = arcFeatCur_delete.NextFeature()) != null)
+                    {
+                        arcFeatCur_delete.DeleteFeature();
+                    }
+                }
+
+                // call the method to load the data
+                loadCustomSegmentsFromE911(featureClass, arcSDEDataSet_RevGeocoder);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error Message: " + Environment.NewLine + ex.Message + Environment.NewLine + Environment.NewLine +
+                "Error Source: " + Environment.NewLine + ex.Source + Environment.NewLine + Environment.NewLine +
+                "Error Location:" + Environment.NewLine + ex.StackTrace,
+                "UTRANS Editor tool error!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+        
+        }
     }
 }
