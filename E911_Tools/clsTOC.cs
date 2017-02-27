@@ -650,15 +650,33 @@ namespace E911_Tools
 
 
         // this method formats the SALIAS1 field for TOC specifics 
-        public static string TocSALIAS1(string strSALIAS1)
+        public static string TocSALIAS1(string strSALIAS1, string strHwyName2)
         {
             try
             {
-                // replace with abbreviation
-                strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "HWY");
-                // remove leading space
-                strSALIAS1 = strSALIAS1.Replace("SR ", "SR");
-                strSALIAS1 = strSALIAS1.Replace("US ", "US");
+                // check if SALIAS1 contains "HIGHWAY"
+                if (strSALIAS1.Contains("HIGHWAY") | strSALIAS1.Contains("HWY"))
+                {
+                    // check if an SR or US highway
+                    if (strHwyName2.Contains("US"))
+                    {
+                        // rename and remove leading space
+                        strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "US");
+                        strSALIAS1 = strSALIAS1.Replace("HWY ", "US");
+                    }
+                    else if (strHwyName2.Contains("SR"))
+                    {
+                        // rename and remove leading space
+                        strSALIAS1 = strSALIAS1.Replace("HIGHWAY ", "SR");
+                        strSALIAS1 = strSALIAS1.Replace("HWY ", "SR");
+                    }
+                }
+                else // is not a highway alias
+                {
+
+                }
+                
+                // trim the string and return the result
                 strSALIAS1 = strSALIAS1.Trim();
 
                 return strSALIAS1;
@@ -671,15 +689,33 @@ namespace E911_Tools
 
 
         // this method formats the SALILAS2 field for TOC specifics 
-        public static string TocSALIAS2(string strSALIAS2)
+        public static string TocSALIAS2(string strSALIAS2, string strHwyName3)
         {
             try
             {
-                // replace with abbreviation
-                strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "HWY");
-                // remove leading space
-                strSALIAS2 = strSALIAS2.Replace("SR ", "SR");
-                strSALIAS2 = strSALIAS2.Replace("US ", "US");
+                // check if SALIAS1 contains "HIGHWAY"
+                if (strSALIAS2.Contains("HIGHWAY") | strSALIAS2.Contains("HWY"))
+                {
+                    // check if an SR or US highway
+                    if (strHwyName3.Contains("US"))
+                    {
+                        // rename and remove leading space
+                        strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "US");
+                        strSALIAS2 = strSALIAS2.Replace("HWY ", "US");
+                    }
+                    else if (strHwyName3.Contains("SR"))
+                    {
+                        // rename and remove leading space
+                        strSALIAS2 = strSALIAS2.Replace("HIGHWAY ", "SR");
+                        strSALIAS2 = strSALIAS2.Replace("HWY ", "SR");
+                    }
+                }
+                else // is not a highway alias
+                {
+
+                }
+
+                // trim the string and return the result
                 strSALIAS2 = strSALIAS2.Trim();
 
                 return strSALIAS2;

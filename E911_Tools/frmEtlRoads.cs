@@ -716,10 +716,9 @@ namespace E911_Tools
                     string strSALIAS3 = "";
                     if (blnStreetNameContainsHwy) // if highway in streetname
                     {
-                        strSTREETNAME = strSTREETNAME.Replace("HIGHWAY", "HWY");
+                        strSTREETNAME = strSTREETNAME.Replace("HIGHWAY ", "HWY");
                         strSALIAS3 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                            strSTREETNAME + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim() + " " +
-                            arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
+                            strSTREETNAME + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("STREETTYPE")).ToString().Trim();
                         strSALIAS3 = strSALIAS3.Replace("  ", " ");
                         strSALIAS3 = strSALIAS3.Trim();
                         arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS3"), strSALIAS3);
@@ -728,10 +727,9 @@ namespace E911_Tools
                     {
                         if (blnAlias1ContainsHwy) // if highway in alias1
                         {
-                            strALIAS1 = strALIAS1.Replace("HIGHWAY", "HWY");
+                            strALIAS1 = strALIAS1.Replace("HIGHWAY ", "HWY");
                             strSALIAS3 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                            strALIAS1 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim() + " " +
-                                arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
+                            strALIAS1 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1TYPE")).ToString().Trim();
                             strSALIAS3 = strSALIAS3.Replace("  ", " ");
                             strSALIAS3 = strSALIAS3.Trim();
                             arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS3"), strSALIAS3);
@@ -740,10 +738,9 @@ namespace E911_Tools
                         {
                             if (blnAlias2ContainsHwy)
                             {
-                                strALIAS2 = strALIAS2.Replace("HIGHWAY", "HWY");
+                                strALIAS2 = strALIAS2.Replace("HIGHWAY ", "HWY");
                                 strSALIAS3 = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("PREDIR")).ToString().Trim() + " " +
-                                   strALIAS2 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim() + " " +
-                                       arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("SUFDIR")).ToString().Trim();
+                                   strALIAS2 + " " + arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS2TYPE")).ToString().Trim();
                                 strSALIAS3 = strSALIAS3.Replace("  ", " ");
                                 strSALIAS3 = strSALIAS3.Trim();
                                 arcFeatureNewSchemaFeat.set_Value(arcFeatureNewSchemaFeat.Fields.FindField("SALIAS3"), strSALIAS3);
@@ -854,7 +851,7 @@ namespace E911_Tools
                     // replace double spaces with one
                     strSTREET = strSTREET.Replace("  ", " ");
 
-                    // get neded info for SALLIAS1 formatting
+                    // get needed info for SALLIAS1 formatting
                     string strAlias1_ = "";
                     string strSALIAS1 = "";
                     strAlias1_ = arcFeatureUtrans.get_Value(arcFeatureUtrans.Fields.FindField("ALIAS1")).ToString().Trim();
@@ -900,12 +897,12 @@ namespace E911_Tools
                             // SALIAS1
                             if (strSALIAS1 != "")
                             {
-                                strSALIAS1 = clsTOC.TocSALIAS1(strSALIAS1);
+                                strSALIAS1 = clsTOC.TocSALIAS1(strSALIAS1, strHWYNAME);
                             }
                             // SALIAS2
                             if (strSALIAS2 != "")
                             {
-                                strSALIAS2 = clsTOC.TocSALIAS2(strSALIAS2);
+                                strSALIAS2 = clsTOC.TocSALIAS2(strSALIAS2, strHWYNAME);
                             }
                             break;
                     }
@@ -1182,7 +1179,21 @@ namespace E911_Tools
                             }  
                             break;
                         case "TOC":
-                            
+                            switch (cboSelectLawZone.Text.ToString())
+                            {
+                                case "City CD":
+                                    strSplitBoundaryName = "E911.E911ADMIN.TOC_CITYCD";
+                                    break;
+                                case "EMS Zones":
+                                    //strSplitBoundaryName = "E911.E911ADMIN.StGeorge_EMS_Zones";
+                                    break;
+                                case "Fire Zones":
+                                    //strSplitBoundaryName = "E911.E911ADMIN.StGeorge_Fire_Zones";
+                                    break;
+                                case "Law Zones":
+                                    //strSplitBoundaryName = "E911.E911ADMIN.StGeorge_Law_Zones";
+                                    break;
+                            }  
                             break;
                     }
                 }
@@ -1241,7 +1252,6 @@ namespace E911_Tools
                 {
                     IFeatureCursor arcFeatureCursor = (IFeatureCursor)arcCursor;
                     comReleaser.ManageLifetime(arcFeatureCursor);
-
                     
                     while ((clsE911Globals.arcFeatureRoadSegment = arcFeatureCursor.NextFeature()) != null)
                     {
@@ -1255,6 +1265,9 @@ namespace E911_Tools
                         spatialFilter.GeometryField = arcFeatClassSplitBoundary.ShapeFieldName;
                         spatialFilter.SpatialRel = esriSpatialRelEnum.esriSpatialRelIntersects;
                         IFeature arcFeaturePSAPpoly;
+
+                        // allow the com releaser to manage the spatial filter
+                        comReleaser.ManageLifetime(spatialFilter);
 
                         // Execute the query.
                         using (ComReleaser comReleaser2 = new ComReleaser())
@@ -1354,7 +1367,8 @@ namespace E911_Tools
                             string strRF = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
                             string strRT= clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("R_F_ADD")).ToString();
                             //string strSegLength = clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")).ToString();
-                            long lngSegLength = Convert.ToInt64(clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length")));
+                            //long lngSegLength = Convert.ToInt64(clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape_Length"))); // this is file geodatabase field name
+                            long lngSegLength = Convert.ToInt64(clsE911Globals.arcFeatureRoadSegment.get_Value(clsE911Globals.arcFeatureRoadSegment.Fields.FindField("Shape.STLength()"))); // this is sde shape length field
                             if (((strLF == "0" & strLT == "0") | (strRF == "0" & strRT == "0")) | lngSegLength <= intMinLength)
                             {
                                 blnNoZeroRanges = false;                       
@@ -1370,6 +1384,9 @@ namespace E911_Tools
 
                 MessageBox.Show("Done spliting selected lines! Due to rules in place, the ones still selected did NOT get split.", "Done!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
+                // refresh the map
+                clsE911Globals.pActiveView.Refresh();
+
                 // show message box if any of the segments did not get split
                 if (blnAllSegsSplit == false)
                 {
